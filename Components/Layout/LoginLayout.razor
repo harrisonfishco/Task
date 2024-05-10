@@ -1,18 +1,20 @@
 ﻿@inherits LayoutComponentBase
+@using Task.Login
 
 <div class="login-container">
     <h1 class="login-title">Login</h1>
-    <p>@Model!.test</p>
+    <p>@Model.test</p>
+    <p>@Model.Status</p>
     <div class="login-form">
-        <InputText @bind-Value="Model!.Username" type="text" id="username" placeholder="Username" class="login-input" />
-        <InputText @bind-Value="Model!.Password" type="password" id="password" placeholder="Password" class="login-input" />
+        <InputText @bind-Value="Model.Username" type="text" id="username" placeholder="Username" class="login-input" />
+        <InputText @bind-Value="Model.Password" type="password" id="password" placeholder="Password" class="login-input" />
         <button id="submit" value="Login" class="login-button" @onclick="OnLogin">Login</button>
     </div>
 </div>
 
 @code {
     [SupplyParameterFromForm]
-    public LoginParams? Model { get; set; }
+    public LoginParams Model { get; set; }
 
     protected override void OnInitialized()
     {
@@ -22,6 +24,8 @@
     private void OnLogin()
     {
         Model!.test = $"{Model.Username} {Model.Password}";
+
+        Model.Status = Model.login.Login(Model.Username, Model.Password) ? "Success" : "Failed";
     }
 
     public class LoginParams
@@ -29,10 +33,16 @@
         public string? Username { get; set; }
         public string? Password { get; set; }
         public string test { get; set; }
+        public ILogin login { get; }
+        public string Status { get; set; }
 
         public LoginParams()
         {
             test = string.Empty;
+            Status = string.Empty;
+
+            login = new TestLogin();
         }
     }
+
 }
