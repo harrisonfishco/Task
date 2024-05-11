@@ -1,0 +1,12 @@
+-- Create patch table if doesn't exist
+-- DON'T FOLLOW THIS FORMAT!!! THIS SHOULD ONLY BE DONE HERE!!!
+IF ( NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TASK_PATCH'))
+BEGIN
+	CREATE TABLE TASK_PATCH(
+		[PATCH_GU] [uniqueidentifier] NOT NULL PRIMARY KEY,
+		[PATCH_ID] [nvarchar](16) NOT NULL,
+		[VERSION] [numeric](3, 0) NOT NULL,
+		[ADD_TIMESTAMP] [smalldatetime] NULL,
+		[UPDATE_TIMESTAMP] [smalldatetime] NULL,
+	);
+END
