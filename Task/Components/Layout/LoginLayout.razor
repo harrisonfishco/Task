@@ -1,5 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @using Task.Login
+@using Task.MODef
+@using Task.TaskUser
 
 <div class="login-container">
     <h1 class="login-title">Login</h1>
@@ -26,6 +28,12 @@
         Model!.test = $"{Model.Username} {Model.Password}";
 
         Model.Status = Model.login.Login(Model.Username, Model.Password) ? "Success" : "Failed";
+
+        TaskUser user = new TaskUser();
+
+        user.AddProperty(TaskUser.PROPERTY_USERNAME);
+        user.AddCondition(new Condition(TaskUser.PROPERTY_PASSWORD, ConditionType.Equal, "test"));
+        user.FindMany();
     }
 
     public class LoginParams

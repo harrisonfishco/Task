@@ -6,11 +6,24 @@ namespace Task
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            string? connectionString;
+
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+            builder.Configuration.AddEnvironmentVariables();
 
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+
+            connectionString = builder.Configuration["TASK_CONNECTIONSTRING"];
+
+            if(connectionString == null || connectionString == string.Empty) 
+            {
+                throw new Exception("Database Connection String is not defined");
+            }
+
+            builder.Services.AddScoped<DatabaseService>(_ => new DatabaseService(connectionString));
 
             var app = builder.Build();
 
@@ -29,7 +42,7 @@ namespace Task
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
-
+            
             app.Run();
         }
     }
