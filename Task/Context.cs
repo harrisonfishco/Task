@@ -1,7 +1,4 @@
-﻿using Azure.Identity;
-using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Task.Login;
@@ -12,6 +9,7 @@ namespace Task
     { 
 
         public DbSet<TaskUser> TaskUsers { get; set; }
+        public DbSet<TaskUserSession> TaskUserSessions { get; set; }
 
         public Context(DbContextOptions<Context> options)
             : base(options)
@@ -42,6 +40,14 @@ namespace Task
 
     public class TaskUser
     {
+        public TaskUser()
+        {
+            Username = string.Empty;
+            Password = string.Empty;
+            Email = string.Empty;
+        }
+
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid UserGU { get; set; }
@@ -63,4 +69,17 @@ namespace Task
         public DateTime? UpdateTimestamp { get; set; }
     }
 
+    public class TaskUserSession
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid UserSessionGU { get; set; }
+        [Required]
+        public Guid UserGU { get; set; }
+        public DateTime? Expires { get; set; }
+        public DateTime? AddTimestamp { get; set; }
+        public DateTime? UpdateTimestamp { get; set; }
+
+        public TaskUser? TaskUser { get; set; }
+    }
 }

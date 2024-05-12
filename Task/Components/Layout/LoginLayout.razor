@@ -36,8 +36,6 @@
     {
         Model!.test = $"{Model.Username} {Model.Password}";
 
-        //Model.Status = PasswordHelper.HashPassword(Model.Password);
-
         using(Context ctx = ContextFactory.CreateDbContext())
         {
             bool canLogin = await ctx.VerifyUser(Model.Username, Model.Password);
