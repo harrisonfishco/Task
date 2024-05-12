@@ -15,8 +15,6 @@ namespace Task
         {
             string connectionString = Environment.GetEnvironmentVariable("TASK_CONNECTIONSTRING");
 
-            //services.AddDbContext<Context>(options =>
-                //options.UseSqlServer(connectionString));
             services.AddDbContextFactory<Context>(options =>
                 options.UseSqlServer(connectionString));
 

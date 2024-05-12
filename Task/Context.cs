@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Azure.Identity;
+using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Task.Login;
 
 namespace Task
 {
@@ -14,7 +16,27 @@ namespace Task
         public Context(DbContextOptions<Context> options)
             : base(options)
         {
+            
+        }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<TaskUser>()
+                .HasAlternateKey(e => e.Username);
+        }
+
+        public async Task<bool> VerifyUser(string username, string password)
+        {
+            bool res = false;
+
+            TaskUser? user = await this.TaskUsers.FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user != null)
+            {
+                res = PasswordHelper.VerifyPassword(password, user.Password);
+            }
+
+            return res;
         }
     }
 
@@ -29,7 +51,7 @@ namespace Task
         public string Username { get; set; }
 
         [Required]
-        [StringLength(50)]
+        [StringLength(100)]
         public string Password { get; set; }
 
         [Required]

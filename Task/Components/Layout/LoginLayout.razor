@@ -32,12 +32,17 @@
         Model = new LoginParams();
     }
 
-    private void OnLogin()
+    private async void OnLogin()
     {
         Model!.test = $"{Model.Username} {Model.Password}";
 
-        Model.Status = Model.login.Login(Model.Username, Model.Password) ? "Success" : "Failed";
+        //Model.Status = PasswordHelper.HashPassword(Model.Password);
 
+        using(Context ctx = ContextFactory.CreateDbContext())
+        {
+            bool canLogin = await ctx.VerifyUser(Model.Username, Model.Password);
+            Model.Status = canLogin ? "Success" : "Error";
+        }
     }
 
     public class LoginParams

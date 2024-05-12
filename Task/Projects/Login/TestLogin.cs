@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Task.Login
 {
-    internal class TestLogin : ILogin
+    public class TestLogin : ILogin
     {
         public bool Login(string? username, string? password)
         {
