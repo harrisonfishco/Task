@@ -1,4 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.EntityFrameworkCore;
+@inherits LayoutComponentBase
+@inject IDbContextFactory<Context> ContextFactory;
+@inject Session session;
+@inject NavigationManager NavigationManager;
 
 <div class="page">
     <div class="sidebar">
@@ -21,3 +25,21 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    // Checks if user is logged in
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Guid sessionId = await session.GetSessionId();
+
+        using(Context ctx = ContextFactory.CreateDbContext())
+        {
+            TaskUserSession? sess = await ctx.TaskUserSessions.Where(s => s.UserSessionGU == sessionId).FirstOrDefaultAsync();
+
+            if(sess == null || sess == default)
+            {
+                NavigationManager.NavigateTo("/Login");
+            }
+        }
+    }
+}
