@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Task.Components;
 
 namespace Task
@@ -23,7 +24,8 @@ namespace Task
                 throw new Exception("Database Connection String is not defined");
             }
 
-            builder.Services.AddScoped<DatabaseService>(_ => new DatabaseService(connectionString));
+            builder.Services.AddDbContextFactory<Context>(options => options.UseSqlServer(connectionString));
+            builder.Services.AddDbContext<Context>(options => options.UseSqlServer(connectionString));
 
             var app = builder.Build();
 
