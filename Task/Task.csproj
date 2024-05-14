@@ -29,8 +29,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Lookup\Lookup.csproj" />
     <ProjectReference Include="Projects\Login\Login.csproj" />
+    <ProjectReference Include="Projects\Lookup\Lookup.csproj" />
   </ItemGroup>
 
 </Project>
