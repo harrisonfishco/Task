@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Task", "Task.csproj", "{CDA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Login", "Projects\Login\Login.csproj", "{9E0F8DA0-D823-442A-BC7E-78B86F5A94A7}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lookup", "Projects\Lookup\Lookup.csproj", "{711B1010-5F1A-4701-9952-F69DEFF095F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{9E0F8DA0-D823-442A-BC7E-78B86F5A94A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E0F8DA0-D823-442A-BC7E-78B86F5A94A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E0F8DA0-D823-442A-BC7E-78B86F5A94A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{711B1010-5F1A-4701-9952-F69DEFF095F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{711B1010-5F1A-4701-9952-F69DEFF095F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{711B1010-5F1A-4701-9952-F69DEFF095F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{711B1010-5F1A-4701-9952-F69DEFF095F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
