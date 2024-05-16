@@ -1,0 +1,48 @@
+﻿<div class="task-section-container">
+    <div class="task-section-title-container @GetCollapseClass()">
+        <span class="task-section-title">@Title</span>
+        @if(Collapsable)
+        {
+            <span class="task-section-collapse-icon task-icon @GetCaret()" @onclick="Toggle"></span>
+        }
+    </div>
+    <div class="task-section-body-container @GetCollapseClass()">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool Collapsable { get; set; } = true;
+
+    [Parameter]
+    public bool StartCollapsed { get; set; } = false;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private bool collapsed;
+
+    protected override void OnParametersSet()
+    {
+        collapsed = Collapsable ? StartCollapsed : false;
+    }
+
+    private void Toggle()
+    {
+        collapsed = !collapsed;
+    }
+
+    private string GetCollapseClass()
+    {
+        return collapsed ? "task-section-collapsed" : "";
+    }
+
+    private string GetCaret()
+    {
+        return collapsed ? "task-icon-collapsed" : "task-icon-expanded";
+    }
+}
