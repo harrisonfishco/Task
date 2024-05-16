@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Task.Login;
@@ -30,9 +31,12 @@ namespace Task
                 {
                     UserGu = Guid.NewGuid(),
                     Username = "admin",
+                    FirstName = "Admin",
+                    LastName = "User",
                     Email = "admin@webadmin.com",
                     Password = "$2a$10$XsoM977PKMnbd1zzIEpJH.UoHjKb5VuFqF/Sq1es/xtYyijshEItG", //password
                     AddTimestamp = DateTime.Now,
+                    Role = "0" //Admin
                 });
 
             TaskLookup.OnModelCreating(modelBuilder);
@@ -55,11 +59,21 @@ namespace Task
 
     public class TaskUser
     {
+        public string FullName
+        {
+            get
+            {
+                return $"{FirstName} {LastName}";
+            }
+        }
         public TaskUser()
         {
             Username = string.Empty;
+            FirstName = string.Empty;
+            LastName = string.Empty;
             Password = string.Empty;
             Email = string.Empty;
+            Role = string.Empty;
         }
 
 
@@ -72,12 +86,24 @@ namespace Task
         public string Username { get; set; }
 
         [Required]
+        [StringLength(20)]
+        public string FirstName { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string LastName { get; set; }
+
+        [Required]
         [StringLength(100)]
         public string Password { get; set; }
 
         [Required]
         [StringLength(100)]
         public string Email { get; set; }
+
+        [Required]
+        [StringLength(5)]
+        public string Role { get; set; }
 
         public DateTime? AddTimestamp { get; set; }
         

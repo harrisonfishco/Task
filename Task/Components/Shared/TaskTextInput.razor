@@ -1,0 +1,46 @@
+﻿@inherits InputBase<string>
+
+<div>
+    <label>@Label</label>
+    <input type="@GetInputType()" @bind="@CurrentValue" disabled="@Disabled"/>
+</div>
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool Disabled { get; set; } = false;
+
+    [Parameter]
+    public InputType Type { get; set; } = InputType.Default;
+
+    private string GetInputType()
+    {
+        string res = string.Empty;
+        switch(Type)
+        {
+            default:
+            case InputType.Default:
+                res = "text";
+                break;
+            case InputType.Password:
+                res = "password";
+                break;
+        }
+        return res;
+    }
+
+    protected override bool TryParseValueFromString(string? value, out string result, out string validationErrorMessage)
+    {
+        result = value ?? string.Empty;
+        validationErrorMessage = string.Empty;
+        return true;
+    }
+
+    public enum InputType
+    {
+        Default,
+        Password
+    }
+}
