@@ -1,0 +1,29 @@
+﻿/* Default button style */
+.btn-default {
+    background-color: transparent;
+    color: black;
+    border-color: mediumpurple;
+    border-width: thick;
+    border-radius: 4px;
+}
+
+/* Neutral button style */
+.btn-neutral {
+    background-color: grey;
+    color: white;
+    border-radius: 4px;
+}
+
+/* Positive button style */
+.btn-positive {
+    background-color: green;
+    color: white;
+    border-radius: 4px;
+}
+
+/* Negative button style */
+.btn-negative {
+    background-color: red;
+    color: white;
+    border-radius: 4px;
+}

@@ -1,0 +1,37 @@
+﻿
+
+<button class="@GetButtonType()" @onclick="OnClick">@Text</button>
+
+@code {
+    public enum ButtonType
+    {
+        Default,    //main color, none filled(next button)
+        Neutral,    //greyish color, none filled(cancel button)
+        Positive,   //main color, filled(confirm button)
+        Negative   //red, filled(delete button)
+    }
+
+    [Parameter]
+    public string Text { get; set; } = "Button";
+
+    [Parameter]
+    public ButtonType Type { get; set; } = ButtonType.Default;
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    private string GetButtonType()
+    {
+        switch(Type)
+        {
+            case ButtonType.Positive:
+                return "btn-positive";
+            case ButtonType.Neutral:
+                return "btn-neutral";
+            case ButtonType.Negative:
+                return "btn-negative";
+            default:
+                return "btn-default";
+        }
+    }
+}
