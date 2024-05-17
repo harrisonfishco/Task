@@ -1,0 +1,80 @@
+﻿@page "/Settings"
+@using Microsoft.EntityFrameworkCore;
+@using Task.Lookup;
+@using Task.Components.Shared;
+@using Task.Login;
+@inject Session session;
+@inject IDbContextFactory<Context> ContextFactory;
+@inject NavigationManager NavigationManager;
+
+<PageTitle>Task - Settings</PageTitle>
+
+<h1>Settings - @role.Value</h1>
+<TaskSection Title="User Settings">
+    <TaskTextInput Disabled="true" Label="Username" @bind-Value="user.Username"/>
+    <TaskTextInput Disabled="true" Label="Name" @bind-Value="FullName"/>
+    <TaskTextInput Disabled="true" Label="Email" @bind-Value="user.Email"/>
+    <br />
+    <TaskTextInput Label="Password" Type="TaskTextInput.InputType.Password" @bind-Value="NewPassword"/>
+    <TaskTextInput Label="Repeat Password" Type="TaskTextInput.InputType.Password" @bind-Value="ConfirmPassword"/>
+    <!--This button should be replace by TaskButton once implemented-->
+    <button @onclick="UpdatePassword">Change Password</button>
+</TaskSection>
+
+@code {
+    private TaskUser user = new TaskUser();
+    private KeyValuePair<string, string> role;
+
+    public string FullName { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
+    public string ConfirmPassword { get; set; } = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Guid sessionId = await session.GetSessionId();
+
+        if(firstRender)
+        {
+            using (Context context = ContextFactory.CreateDbContext())
+            {
+                TaskUserSession? sess = await context.TaskUserSessions.Where(s => s.UserSessionGu == sessionId).FirstOrDefaultAsync();
+
+                if (sess != null && sess != default)
+                {
+                    TaskUser? u = await context.TaskUsers.Where(u => u.UserGu == sess.UserGu).FirstOrDefaultAsync();
+                    if (u == null || u == default)
+                    {
+                        NavigationManager.NavigateTo("/Login");
+                    }
+                    else
+                    {
+                        user = u;
+                        FullName = u.FullName;
+
+                        TaskLookup? userRole = await context.TaskLookups.Where(l => l.Name == "Task.Roles").FirstOrDefaultAsync();
+
+                        TaskLookupValue? v = await context.TaskLookupValues.Where(v => v.Code == user.Role && v.LookupGu == userRole.LookupGu).FirstOrDefaultAsync();
+
+                        role = new KeyValuePair<string, string>(v.Code, v.Value);
+                        StateHasChanged();
+                    }
+                }
+            }
+        }
+    }
+
+    private async Task UpdatePassword()
+    {
+        if(NewPassword != string.Empty && NewPassword == ConfirmPassword)
+        {
+            using (Context context = ContextFactory.CreateDbContext())
+            {
+                user.Password = PasswordHelper.HashPassword(NewPassword);
+                user.UpdateTimestamp = DateTime.Now;
+                context.Update(user);
+                await context.SaveChangesAsync();
+            }
+            NewPassword = ConfirmPassword = string.Empty;
+        }
+    }
+}
