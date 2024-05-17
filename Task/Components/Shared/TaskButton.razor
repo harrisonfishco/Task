@@ -1,14 +1,22 @@
 ﻿
-
-<button class="@GetButtonType()" @onclick="OnClick">@Text</button>
+<button style="border-radius: 4px; 
+        border-width: thick; 
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;" 
+        class="@GetButtonType()" 
+        @onclick="OnClick">
+        @Text
+</button>
 
 @code {
     public enum ButtonType
     {
-        Default,    //main color, none filled(next button)
-        Neutral,    //greyish color, none filled(cancel button)
-        Positive,   //main color, filled(confirm button)
-        Negative   //red, filled(delete button)
+        Default,    //border main color, transparent(next button)
+        Neutral,    //greyish color, filled(cancel button)
+        Positive,   //main color, filled(confirm button) ??? or green
+        Negative,   //red, filled(delete button)
+        Info,       //light blue, filled
+        Warning,    //orange, filled("I understand the risk" button)
+        Link,       //blue text, transparent,
     }
 
     [Parameter]
@@ -20,6 +28,8 @@
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
 
+
+
     private string GetButtonType()
     {
         switch(Type)
@@ -30,6 +40,12 @@
                 return "btn-neutral";
             case ButtonType.Negative:
                 return "btn-negative";
+            case ButtonType.Info:
+                return "btn-info";
+            case ButtonType.Warning:
+                return "btn-warning";
+            case ButtonType.Link:
+                return "btn-link";
             default:
                 return "btn-default";
         }

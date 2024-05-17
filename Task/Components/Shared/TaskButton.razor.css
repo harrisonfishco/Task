@@ -3,27 +3,46 @@
     background-color: transparent;
     color: black;
     border-color: mediumpurple;
-    border-width: thick;
-    border-radius: 4px;
 }
 
 /* Neutral button style */
 .btn-neutral {
     background-color: grey;
     color: white;
-    border-radius: 4px;
+    border-color: grey;
+}
+
+/* Info button style */
+.btn-info {
+    background-color: dodgerblue;
+    color: white;
+    border-color: dodgerblue;
+}
+
+/* Warning button style */
+.btn-warning {
+    background-color: orange;
+    color: white;
+    border-color: orange;
 }
 
 /* Positive button style */
 .btn-positive {
     background-color: green;
     color: white;
-    border-radius: 4px;
+    border-color: green;
 }
 
 /* Negative button style */
 .btn-negative {
     background-color: red;
     color: white;
-    border-radius: 4px;
+    border-color: red;
+}
+
+/* Link button style */
+.btn-link {
+    background-color: transparent;
+    color: #006BB7;
+    border-color: transparent;
 }
