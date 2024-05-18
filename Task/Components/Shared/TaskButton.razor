@@ -8,17 +8,6 @@
 </button>
 
 @code {
-    public enum ButtonType
-    {
-        Default,    //border main color, transparent(next button)
-        Neutral,    //greyish color, filled(cancel button)
-        Positive,   //main color, filled(confirm button) ??? or green
-        Negative,   //red, filled(delete button)
-        Info,       //light blue, filled
-        Warning,    //orange, filled("I understand the risk" button)
-        Link,       //blue text, transparent,
-    }
-
     [Parameter]
     public string Text { get; set; } = "Button";
 
@@ -27,8 +16,6 @@
 
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
-
-
 
     private string GetButtonType()
     {
@@ -49,5 +36,16 @@
             default:
                 return "btn-default";
         }
+    }
+
+    public enum ButtonType
+    {
+        Default,    //border main color, transparent(next button)
+        Neutral,    //greyish color, filled(cancel button)
+        Positive,   //main color, filled(confirm button) ??? or green
+        Negative,   //red, filled(delete button)
+        Info,       //light blue, filled
+        Warning,    //orange, filled("I understand the risk" button)
+        Link,       //blue text, transparent,
     }
 }
