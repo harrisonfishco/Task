@@ -1,0 +1,19 @@
+﻿div {
+    display: inline-block;
+    margin: 16px 32px 16px 0px;
+}
+
+label {
+    margin-right: 4px;
+}
+
+select {
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+select:disabled {
+    background-color: rgba(239, 239, 239, 0.3);
+    color: rgba(84, 84, 84);
+}
