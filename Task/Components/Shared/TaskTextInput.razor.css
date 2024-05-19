@@ -1,0 +1,14 @@
+﻿div {
+    display: inline-block;
+    margin: 16px 32px 16px 0px;
+}
+
+label {
+    margin-right: 4px;
+}
+
+input {
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.4);
+}

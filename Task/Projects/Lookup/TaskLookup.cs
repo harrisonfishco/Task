@@ -32,6 +32,26 @@ namespace Task.Lookup
                     AddTimestamp = DateTime.Now
                 });
 
+            modelBuilder.Entity<TaskLookupValue>().HasData(
+                [
+                    new TaskLookupValue()
+                    {
+                        LookupValueGu = Guid.NewGuid(),
+                        Code = "0",
+                        Value = "Admin",
+                        LookupGu = Guid.Parse(LOOKUPTABLE_ROLE),
+                        AddTimestamp = DateTime.Now
+                    },
+                    new TaskLookupValue()
+                    {
+                        LookupValueGu = Guid.NewGuid(),
+                        Code = "1",
+                        Value = "Developer",
+                        LookupGu = Guid.Parse (LOOKUPTABLE_ROLE),
+                        AddTimestamp = DateTime.Now
+                    }
+                ]);
+
         }
 
         [Key]
