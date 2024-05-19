@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Task.ModelObjects;
 
 namespace Task.Lookup
 {
-    public class TaskLookup
+    public class TaskLookup : ModelObject
     {
         //Define some product owned lookups
         public const string LOOKUPTABLE_ROLE = "c02def0b-9e62-4620-a981-00915bea53d9";
@@ -65,14 +66,10 @@ namespace Task.Lookup
         [Required]
         public bool Locked { get; set; }
 
-        public DateTime? AddTimestamp { get; set; }
-
-        public DateTime? UpdateTimestamp { get; set; }
-
         public ICollection<TaskLookupValue> TaskLookupValues { get; set; }
     }
 
-    public class TaskLookupValue
+    public class TaskLookupValue : ModelObject
     {
         public TaskLookupValue()
         {
@@ -91,9 +88,6 @@ namespace Task.Lookup
         [Required]
         [StringLength(50)]
         public string Value { get; set; }
-
-        public DateTime? AddTimestamp { get; set; }
-        public DateTime? UpdateTimestamp { get; set; }
 
         public Guid LookupGu { get; set; }
         [Required]
