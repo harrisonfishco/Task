@@ -1,8 +1,8 @@
 ﻿@inherits InputBase<string>
 
 <div>
-    <label>@Label</label>
-    <input type="@GetInputType()" @bind="@CurrentValue" disabled="@Disabled"/>
+    <label for="@instance">@Label</label>
+    <input id="@instance" type="@GetInputType()" @bind="@CurrentValue" disabled="@Disabled"/>
 </div>
 
 @code {
@@ -14,6 +14,8 @@
 
     [Parameter]
     public InputType Type { get; set; } = InputType.Default;
+
+    private Guid instance = Guid.NewGuid();
 
     private string GetInputType()
     {
