@@ -1,0 +1,30 @@
+﻿@inherits InputBase<bool>
+
+<div>
+    <input type="checkbox" @bind="@CurrentValue" @bind:after="CheckboxChanged" />
+    <label>@Label</label>
+</div>
+
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<ChangeEventArgs> OnChanged { get; set; }
+
+    private void CheckboxChanged()
+    {
+        ChangeEventArgs e = new ChangeEventArgs();
+        e.Value = CurrentValue;
+        OnChanged.InvokeAsync(e);
+    }
+
+    protected override bool TryParseValueFromString(string? value, out bool result, out string validationErrorMessage)
+    {
+        result = false;
+        validationErrorMessage = string.Empty;
+        return true;
+    }
+
+}
