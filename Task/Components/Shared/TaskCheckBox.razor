@@ -1,8 +1,17 @@
 ﻿@inherits InputBase<bool>
 
-<div>
-    <input type="checkbox" @bind="@CurrentValue" @bind:after="CheckboxChanged" disabled="@Disabled"/>
-    <label>@Label</label>
+<div class="grid-center @GetLabelStyle()">
+    @if(LabelPosition == Postion.Left || LabelPosition == Postion.Top)
+    {
+        <label class="checkbox-label">@Label</label>
+    }
+   
+    <input class="checkbox-input" type="checkbox" @bind="@CurrentValue" @bind:after="CheckboxChanged" disabled="@Disabled"/>
+
+    @if (LabelPosition == Postion.Right || LabelPosition == Postion.Bottom)
+    {
+        <label class="checkbox-label">@Label</label>
+    }
 </div>
 
 
@@ -16,6 +25,10 @@
     [Parameter]
     public EventCallback<ChangeEventArgs> OnChanged { get; set; }
 
+    [Parameter]
+    public Postion LabelPosition { get; set; } = Postion.Left;
+
+
     private void CheckboxChanged()
     {
         ChangeEventArgs e = new ChangeEventArgs();
@@ -23,11 +36,32 @@
         OnChanged.InvokeAsync(e);
     }
 
+    private string GetLabelStyle()
+    {
+        switch (LabelPosition)
+        {
+            case Postion.Top:
+            case Postion.Bottom:
+                return "label-break";
+
+            default:
+                return "";
+        }
+    }
+
     protected override bool TryParseValueFromString(string? value, out bool result, out string validationErrorMessage)
     {
         result = false;
         validationErrorMessage = string.Empty;
         return true;
+    }
+
+    public enum Postion
+    {
+        Top,
+        Bottom,
+        Left,
+        Right
     }
 
 }
