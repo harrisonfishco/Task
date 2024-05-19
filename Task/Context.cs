@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Task.Login;
 using Task.Lookup;
+using Task.ModelObjects;
 
 namespace Task
 {
@@ -14,6 +14,7 @@ namespace Task
         public DbSet<TaskUserSession> TaskUserSessions { get; set; }
         public DbSet<TaskLookup> TaskLookups { get; set; }
         public DbSet<TaskLookupValue> TaskLookupValues { get; set; }
+        public DbSet<TaskTask> Tasks { get; set; }
 
         public Context(DbContextOptions<Context> options)
             : base(options)
@@ -40,6 +41,8 @@ namespace Task
                 });
 
             TaskLookup.OnModelCreating(modelBuilder);
+            TaskTask.OnModelCreating(modelBuilder);
+            TaskActivity.OnModelCreating(modelBuilder);
         }
 
         public async Task<bool> VerifyUser(string username, string password)
@@ -57,7 +60,7 @@ namespace Task
         }
     }
 
-    public class TaskUser
+    public class TaskUser : ModelObject
     {
         public string FullName
         {
@@ -105,19 +108,15 @@ namespace Task
         [StringLength(5)]
         public string Role { get; set; }
 
-        public DateTime? AddTimestamp { get; set; }
-        
-        public DateTime? UpdateTimestamp { get; set; }
+        public ICollection<TaskTask>? OpenedTasks { get; set; }
     }
 
-    public class TaskUserSession
+    public class TaskUserSession : ModelObject
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid UserSessionGu { get; set; }
         public DateTime? Expires { get; set; }
-        public DateTime? AddTimestamp { get; set; }
-        public DateTime? UpdateTimestamp { get; set; }
 
         [Required]
         public Guid UserGu { get; set; }

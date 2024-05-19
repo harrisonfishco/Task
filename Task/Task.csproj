@@ -31,6 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="Projects\Login\Login.csproj" />
     <ProjectReference Include="Projects\Lookup\Lookup.csproj" />
+    <ProjectReference Include="Projects\ModelObjects\ModelObjects.csproj" />
   </ItemGroup>
 
 </Project>
