@@ -1,48 +1,77 @@
-﻿/* Default button style */
+﻿button {
+    border-radius: 6px; 
+    border: 2px solid;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* Default button style */
 .btn-default {
     background-color: transparent;
     color: black;
-    border-color: mediumpurple;
+    border-color: rgba(0,0,0,0.5);
+}
+
+.btn-default:hover {
+    background-color: rgba(0,0,0,0.2);
+    border-color: rgba(0,0,0,0.2);
 }
 
 /* Neutral button style */
 .btn-neutral {
-    background-color: grey;
+    background-color: rgba(166, 166, 166, 1);
     color: white;
-    border-color: grey;
+    border-color: rgba(166, 166, 166, 1);
+}
+
+.btn-neutral:hover {
+    background-color: rgba(107, 107, 107, 1);
+    border-color: rgba(107, 107, 107, 1);
 }
 
 /* Info button style */
 .btn-info {
-    background-color: dodgerblue;
+    background-color: rgba(90, 173, 255, 1);
     color: white;
-    border-color: dodgerblue;
+    border-color: rgba(90, 173, 255, 1);
+}
+
+.btn-info:hover {
+    background-color: rgba(0, 128, 255, 1);
+    border-color: rgba(0, 128, 255, 1);
 }
 
 /* Warning button style */
 .btn-warning {
-    background-color: orange;
+    background-color: rgba(255, 178, 50, 1);
     color: white;
-    border-color: orange;
+    border-color: rgba(255, 178, 50, 1);
+}
+
+.btn-warning:hover {
+    background-color: rgba(255, 159, 0, 1);
+    border-color: rgba(255, 159, 0, 1);
 }
 
 /* Positive button style */
 .btn-positive {
-    background-color: green;
+    background-color: rgba(30, 237, 0, 1);
     color: white;
-    border-color: green;
+    border-color: rgba(30, 237, 0, 1);
+}
+
+.btn-positive:hover {
+    background-color: rgba(24, 189, 0, 1);
+    border-color: rgba(24, 189, 0, 1);
 }
 
 /* Negative button style */
 .btn-negative {
-    background-color: red;
+    background-color: rgba(255, 0, 0, 1);
     color: white;
-    border-color: red;
+    border-color: rgba(255, 0, 0, 1);
 }
 
-/* Link button style */
-.btn-link {
-    background-color: transparent;
-    color: #006BB7;
-    border-color: transparent;
+.btn-negative:hover {
+    background-color: rgba(178, 0, 0, 1);
+    border-color: rgba(178, 0, 0, 1);
 }

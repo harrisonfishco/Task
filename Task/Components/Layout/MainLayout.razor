@@ -16,7 +16,6 @@
 
         <article class="content px-4">
             @Body
-            <Task.Components.Shared.TaskButton Type="Shared.TaskButton.ButtonType.Negative" Text="Button Type Negative" OnClick="TaskButtonMethod" />
         </article>
     </main>
 </div>
@@ -28,12 +27,6 @@
 </div>
 
 @code {
-    // Testing custom button
-    public async void TaskButtonMethod()
-    {
-        Console.WriteLine("Testing Custom Button");
-    }
-
     // Checks if user is logged in
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

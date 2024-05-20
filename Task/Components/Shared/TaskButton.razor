@@ -1,7 +1,5 @@
 ﻿
-<button style="border-radius: 4px; 
-        border-width: thick; 
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;" 
+<button 
         class="@GetButtonType()" 
         @onclick="OnClick">
         @Text
@@ -31,8 +29,6 @@
                 return "btn-info";
             case ButtonType.Warning:
                 return "btn-warning";
-            case ButtonType.Link:
-                return "btn-link";
             default:
                 return "btn-default";
         }
@@ -46,6 +42,5 @@
         Negative,   //red, filled(delete button)
         Info,       //light blue, filled
         Warning,    //orange, filled("I understand the risk" button)
-        Link,       //blue text, transparent,
     }
 }
