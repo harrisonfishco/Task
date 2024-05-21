@@ -9,16 +9,19 @@
 
 <PageTitle>Task - Settings</PageTitle>
 
-<h1>Settings - @role.Value</h1>
+<h1>Settings - @user.Role</h1>
 <TaskSection Title="User Settings">
     <TaskTextInput Disabled="true" Label="Username" @bind-Value="user.Username"/>
     <TaskTextInput Disabled="true" Label="Name" @bind-Value="FullName"/>
     <TaskTextInput Disabled="true" Label="Email" @bind-Value="user.Email"/>
     <br />
+    <TaskDropDown Label="Role" Options="@Roles" @bind-Value="UserRole" Disabled="true"></TaskDropDown>
+    <br />
     <TaskTextInput Label="Password" Type="TaskTextInput.InputType.Password" @bind-Value="NewPassword"/>
     <TaskTextInput Label="Repeat Password" Type="TaskTextInput.InputType.Password" @bind-Value="ConfirmPassword"/>
     <!--This button should be replace by TaskButton once implemented-->
     <button @onclick="UpdatePassword">Change Password</button>
+    <br />
 </TaskSection>
 
 @code {
@@ -28,6 +31,8 @@
     public string FullName { get; set; } = string.Empty;
     public string NewPassword { get; set; } = string.Empty;
     public string ConfirmPassword { get; set; } = string.Empty;
+    public string UserRole { get; set; } = string.Empty;
+    public Dictionary<string, string> Roles { get; set; } = new Dictionary<string, string>();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -55,7 +60,10 @@
 
                         TaskLookupValue? v = await context.TaskLookupValues.Where(v => v.Code == user.Role && v.LookupGu == userRole.LookupGu).FirstOrDefaultAsync();
 
+                        await context.TaskLookupValues.Where(v => v.LookupGu == userRole.LookupGu).OrderBy(lv => lv.Value).ForEachAsync(lv => Roles.Add(lv.Code, lv.Value));
+
                         role = new KeyValuePair<string, string>(v.Code, v.Value);
+                        UserRole = v.Code;
                         StateHasChanged();
                     }
                 }
