@@ -5,73 +5,73 @@
 }
 
 /* Default button style */
-.btn-default {
+.task-btn-default {
     background-color: transparent;
     color: black;
     border-color: rgba(0,0,0,0.5);
 }
 
-.btn-default:hover {
+.task-btn-default:hover {
     background-color: rgba(0,0,0,0.2);
     border-color: rgba(0,0,0,0.2);
 }
 
 /* Neutral button style */
-.btn-neutral {
+.task-btn-neutral {
     background-color: rgba(166, 166, 166, 1);
     color: white;
     border-color: rgba(166, 166, 166, 1);
 }
 
-.btn-neutral:hover {
+.task-btn-neutral:hover {
     background-color: rgba(107, 107, 107, 1);
     border-color: rgba(107, 107, 107, 1);
 }
 
 /* Info button style */
-.btn-info {
+.task-btn-info {
     background-color: rgba(90, 173, 255, 1);
     color: white;
     border-color: rgba(90, 173, 255, 1);
 }
 
-.btn-info:hover {
+.task-btn-info:hover {
     background-color: rgba(0, 128, 255, 1);
     border-color: rgba(0, 128, 255, 1);
 }
 
 /* Warning button style */
-.btn-warning {
+.task-btn-warning {
     background-color: rgba(255, 178, 50, 1);
     color: white;
     border-color: rgba(255, 178, 50, 1);
 }
 
-.btn-warning:hover {
+.task-btn-warning:hover {
     background-color: rgba(255, 159, 0, 1);
     border-color: rgba(255, 159, 0, 1);
 }
 
 /* Positive button style */
-.btn-positive {
+.task-btn-positive {
     background-color: rgba(30, 237, 0, 1);
     color: white;
     border-color: rgba(30, 237, 0, 1);
 }
 
-.btn-positive:hover {
+.task-btn-positive:hover {
     background-color: rgba(24, 189, 0, 1);
     border-color: rgba(24, 189, 0, 1);
 }
 
 /* Negative button style */
-.btn-negative {
+.task-btn-negative {
     background-color: rgba(255, 0, 0, 1);
     color: white;
     border-color: rgba(255, 0, 0, 1);
 }
 
-.btn-negative:hover {
+.task-btn-negative:hover {
     background-color: rgba(178, 0, 0, 1);
     border-color: rgba(178, 0, 0, 1);
 }
