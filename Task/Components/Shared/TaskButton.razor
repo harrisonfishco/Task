@@ -1,0 +1,46 @@
+﻿
+<button 
+        class="@GetButtonType()" 
+        @onclick="OnClick">
+        @Text
+</button>
+
+@code {
+    [Parameter]
+    public string Text { get; set; } = "Button";
+
+    [Parameter]
+    public ButtonType Type { get; set; } = ButtonType.Default;
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    private string GetButtonType()
+    {
+        switch(Type)
+        {
+            case ButtonType.Positive:
+                return "task-btn-positive";
+            case ButtonType.Neutral:
+                return "task-btn-neutral";
+            case ButtonType.Negative:
+                return "task-btn-negative";
+            case ButtonType.Info:
+                return "task-btn-info";
+            case ButtonType.Warning:
+                return "task-btn-warning";
+            default:
+                return "task-btn-default";
+        }
+    }
+
+    public enum ButtonType
+    {
+        Default,    //border main color, transparent(next button)
+        Neutral,    //greyish color, filled(cancel button)
+        Positive,   //main color, filled(confirm button) ??? or green
+        Negative,   //red, filled(delete button)
+        Info,       //light blue, filled
+        Warning,    //orange, filled("I understand the risk" button)
+    }
+}
