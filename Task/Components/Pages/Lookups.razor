@@ -1,0 +1,79 @@
+﻿@page "/Lookups"
+@using Microsoft.EntityFrameworkCore;
+@using Task.Components.Shared;
+@using Task.Lookup;
+@using TTask.TaskTree;
+@inject Session session;
+@inject IDbContextFactory<Context> ContextFactory;
+@inject NavigationManager NavigationManager;
+
+<PageTitle>Task - Lookup Definitions</PageTitle>
+
+<h1>Lookup Definitions</h1>
+<TaskSection Title="Lookup Definitions">
+    <TaskTree RootNodes="@RootNodes" />
+</TaskSection>
+
+@code {
+    public TTask.TaskTree.TaskTreeNodeCollection RootNodes = new TaskTreeNodeCollection();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        string userRole = string.Empty;
+
+        if(TaskCache.ContainsKey("TASKUSER_ROLE"))
+        {
+            userRole = TaskCache.GetKey("TASKUSER_ROLE")!;
+        }
+        else
+        {
+            Guid sessionId = await session.GetSessionId();
+
+            if(firstRender)
+            {
+                using(Context context = ContextFactory.CreateDbContext())
+                {
+                    TaskUserSession? sess = await context.TaskUserSessions.Where(s => s.UserSessionGu == sessionId).FirstOrDefaultAsync();
+
+                    if(sess != null && sess != default)
+                    {
+                        TaskUser? u = await context.TaskUsers.Where(u => u.UserGu == sess.UserGu).FirstOrDefaultAsync();
+                        if(u == null || u == default)
+                        {
+                            NavigationManager.NavigateTo("/Login");
+                        }
+                        else
+                        {
+                            userRole = u.Role;
+                        }
+                    }
+                }
+            }
+        }
+
+        if(firstRender && userRole != "0") //Making sure user is admin
+        {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        List<TaskLookup> lookups = new List<TaskLookup>();
+        TaskTreeNodeCollection treeNodes = new TaskTreeNodeCollection();
+        using(Context context = ContextFactory.CreateDbContext())
+        {
+            await context.TaskLookups.ForEachAsync(l =>
+            {
+                lookups.Add(l);
+            });
+        }
+
+        lookups.ForEach(l =>
+        {
+            RootNodes.AddPath(l.Name);
+        });
+
+        StateHasChanged();
+    }
+}

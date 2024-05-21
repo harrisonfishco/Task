@@ -54,6 +54,8 @@
             {
                 TaskUser user = await ctx.TaskUsers.FirstAsync(u => u.Username == Model.Username);
 
+                TaskCache.SetKey("TASKUSER_ROLE", user.Role);
+
                 TaskUserSession tus = new TaskUserSession();
                 tus.TaskUser = user;
                 tus.UserGu = user.UserGu;

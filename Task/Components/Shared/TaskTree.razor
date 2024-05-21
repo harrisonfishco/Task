@@ -1,0 +1,16 @@
+﻿@using TTask.TaskTree;
+
+<div class="task-tree-container">
+    @foreach(TaskTreeNode root in RootNodes)
+    {
+        <TaskSubTree Node="@root" Label="@root.Name"/>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public TTask.TaskTree.TaskTreeNodeCollection RootNodes { get; set; } = new TaskTreeNodeCollection();
+
+    [Parameter]
+    public EventCallback OnSelect { get; set; }
+}

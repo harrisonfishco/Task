@@ -1,0 +1,32 @@
+﻿@using TTask.TaskTree;
+
+<div>
+    <p>@Label</p>
+    @foreach(TaskTreeNode child in Node.Children)
+    {
+        <TaskSubTree Node="@child"/>
+    }
+    @foreach(string item in Node.Items)
+    {
+        <p @onclick="@CallCallback(item)">&#9;@item</p>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public TaskTreeNode Node { get; set; }
+
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<TaskTreeEventArgs> OnItemClick { get; set; }
+
+    private EventCallback CallCallback(string item)
+    {
+        TaskTreeEventArgs args = new TaskTreeEventArgs(item);
+        OnItemClick.InvokeAsync(args);
+
+        return new EventCallback();
+    }
+}
