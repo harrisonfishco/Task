@@ -12,26 +12,49 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 0px;
     border-radius: 5px; /* Slightly rounded corners for the form */
-    gap: 10px
+    gap: 10px;
+    
+}
+
+.login-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border-radius: 20px; /* Slightly rounded corners for the form */
+    background-color: #FFF;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .login-title {
+    padding: 10px;
+    padding-left: 50px;
+    padding-right: 50px;
     font-size: 3rem;
     color: #333;
-    margin-bottom: 20px;
+    margin-bottom: 0px;
+    background-color: rgba(0,0,0,0);
 }
 
 .login-input {
     width: 300px;
     padding: 10px;
-    margin-bottom: 10px;
-    background: #0056b3;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Adds shadow to the input */
+    background: #f4f4f4;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1); /* Adds shadow to the input */
     border: none;
+    outline: none;
     border-radius: 5px;
+    margin: 0px 0px 0px 0px;
+    border: 0px solid rgba(0,0,0,0.4);
+    transition: box-shadow 0.3s ease-in-out;
 }
+
+    .login-input:focus {
+        box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+    }
 
 .login-button {
     width: 318px; /* Slightly wider to match the input fields */

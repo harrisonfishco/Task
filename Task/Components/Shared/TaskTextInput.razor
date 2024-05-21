@@ -1,8 +1,11 @@
 ﻿@inherits InputBase<string>
 
 <div>
-    <label>@Label</label>
-    <input type="@GetInputType()" @bind="@CurrentValue" disabled="@Disabled"/>
+    @if(Label != string.Empty)
+    {
+        <label>@Label</label>
+    }
+    <input type="@GetInputType()" @bind="@CurrentValue" placeholder="@Placeholder" class="@Class" disabled="@Disabled"/>
 </div>
 
 @code {
@@ -14,6 +17,12 @@
 
     [Parameter]
     public InputType Type { get; set; } = InputType.Default;
+
+    [Parameter]
+    public string Placeholder { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Class { get; set; } = string.Empty;
 
     private string GetInputType()
     {

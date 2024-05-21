@@ -1,19 +1,22 @@
 ﻿@inherits LayoutComponentBase
 @using Task.Login
 @using Microsoft.EntityFrameworkCore;
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+@using Task.Components.Shared;
 @inject IDbContextFactory<Context> ContextFactory;
 @inject Session session;
 @inject NavigationManager NavigationManager;
 
 <div class="login-container">
-    <h1 class="login-title">Login</h1>
-    <p>@Model.test</p>
-    <p>@Model.Status</p>
-    <div class="login-form">
-        <InputText @bind-Value="Model.Username" type="text" id="username" placeholder="Username" class="login-input" />
-        <InputText @bind-Value="Model.Password" type="password" id="password" placeholder="Password" class="login-input" />
-        <button id="submit" value="Login" class="login-button" @onclick="OnLogin">Login</button>
+    <div class="login-box">
+        <h1 class="login-title">Login</h1>
+        <p>@Model.test</p>
+        <p>@Model.Status</p>
+        <div class="login-form">
+            <input @bind="Model.Username" id="username" placeholder="Username" class="login-input" />
+            <input @bind="Model.Password" type="password" placeholder="Password" class="login-input" />
+            <button id="submit" value="Login" class="login-button" @onclick="OnLogin">Login</button>
+        </div>
     </div>
 </div>
 
