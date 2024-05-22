@@ -20,6 +20,10 @@
     padding: 4px 16px 16px 16px;
 }
 
+.task-section-no-padding {
+    padding: 0px;
+}
+
 .task-section-body-container > ::deep*:last-child {
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;

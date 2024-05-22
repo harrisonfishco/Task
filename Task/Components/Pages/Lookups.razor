@@ -10,12 +10,17 @@
 <PageTitle>Task - Lookup Definitions</PageTitle>
 
 <h1>Lookup Definitions</h1>
-<TaskSection Title="Lookup Definitions">
-    <TaskTree RootNodes="@RootNodes" />
+<TaskSection Title="Lookup Definitions" NoPadding="true">
+    <div class="lookup-container">
+        <TaskTree RootNodes="@RootNodes" OnSelect="@OnTreeItemClick" />
+        <div class="lookup-body">
+        </div>
+    </div>
 </TaskSection>
 
 @code {
     public TTask.TaskTree.TaskTreeNodeCollection RootNodes = new TaskTreeNodeCollection();
+    public TTask.TaskTree.TaskTreeNodeCollection test = new TaskTreeNodeCollection();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -55,6 +60,11 @@
         {
             NavigationManager.NavigateTo("/");
         }
+    }
+
+    private void OnTreeItemClick(TaskTreeEventArgs e)
+    {
+        Console.WriteLine(e.Item);
     }
 
     protected override async Task OnInitializedAsync()
