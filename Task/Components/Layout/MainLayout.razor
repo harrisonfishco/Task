@@ -12,6 +12,7 @@
     <main>
         <div class="top-row px-4">
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <button style="margin: 4px" id="submit" value="Logout" @onclick="OnLogout">Logout</button>
         </div>
 
         <article class="content px-4">
@@ -41,5 +42,10 @@
                 NavigationManager.NavigateTo("/Login");
             }
         }
+    }
+
+    private async void OnLogout()
+    {
+        await session.DeleteSession();
     }
 }
