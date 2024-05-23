@@ -13,7 +13,7 @@
     align-items: center;
     justify-content: center;
     padding: 0px;
-    border-radius: 5px; /* Slightly rounded corners for the form */
+    border-radius: 5px;
     gap: 10px;
     
 }
@@ -24,7 +24,7 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
-    border-radius: 20px; /* Slightly rounded corners for the form */
+    border-radius: 20px;
     background-color: #FFF;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
@@ -43,7 +43,7 @@
     width: 300px;
     padding: 10px;
     background: #f4f4f4;
-    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1); /* Adds shadow to the input */
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
     border: none;
     outline: none;
     border-radius: 5px;
@@ -52,15 +52,15 @@
     transition: box-shadow 0.3s ease-in-out;
 }
 
-    .login-input:focus {
-        box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
-    }
+.login-input:focus {
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
 
 .login-button {
-    width: 318px; /* Slightly wider to match the input fields */
+    width: 318px;
     padding: 10px;
     color: white;
-    background-color: #007BFF; /* Bootstrap blue */
+    background-color: #007BFF;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -68,6 +68,6 @@
     margin-top: 20px;
 }
 
-    .login-button:hover {
-        background-color: #0056b3; /* Darker blue on hover */
-    }
+.login-button:hover {
+    background-color: #0056b3;
+}

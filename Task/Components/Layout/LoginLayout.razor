@@ -10,8 +10,6 @@
 <div class="login-container">
     <div class="login-box">
         <h1 class="login-title">Login</h1>
-        <p>@Model.test</p>
-        <p>@Model.Status</p>
         <div class="login-form">
             <input @bind="Model.Username" id="username" placeholder="Username" class="login-input" />
             <input @bind="Model.Password" type="password" placeholder="Password" class="login-input" />
@@ -47,8 +45,6 @@
 
     private async void OnLogin()
     {
-        Model!.test = $"{Model.Username} {Model.Password}";
-
         using(Context ctx = ContextFactory.CreateDbContext())
         {
             bool canLogin = await ctx.VerifyUser(Model.Username, Model.Password);
@@ -79,12 +75,10 @@
     {
         public string? Username { get; set; }
         public string? Password { get; set; }
-        public string test { get; set; }
         public string Status { get; set; }
 
         public LoginParams()
         {
-            test = string.Empty;
             Status = string.Empty;
         }
     }
