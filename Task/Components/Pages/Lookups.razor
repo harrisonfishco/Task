@@ -14,6 +14,7 @@
     <div class="lookup-container">
         <TaskTree RootNodes="@RootNodes" OnSelect="@OnTreeItemClick" />
         <div class="lookup-body">
+            <TaskGrid PrimaryObject="@PO"/>
         </div>
     </div>
 </TaskSection>
@@ -21,6 +22,8 @@
 @code {
     public TTask.TaskTree.TaskTreeNodeCollection RootNodes = new TaskTreeNodeCollection();
     public TTask.TaskTree.TaskTreeNodeCollection test = new TaskTreeNodeCollection();
+
+    public List<TaskLookupValue> PO { get; set; } = new List<TaskLookupValue>();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -40,10 +43,10 @@
                 {
                     TaskUserSession? sess = await context.TaskUserSessions.Where(s => s.UserSessionGu == sessionId).FirstOrDefaultAsync();
 
-                    if(sess != null && sess != default)
+                    if(TypeCheck.NotEmpty(sess))
                     {
                         TaskUser? u = await context.TaskUsers.Where(u => u.UserGu == sess.UserGu).FirstOrDefaultAsync();
-                        if(u == null || u == default)
+                        if(TypeCheck.Empty(u))
                         {
                             NavigationManager.NavigateTo("/Login");
                         }
@@ -77,6 +80,10 @@
             {
                 lookups.Add(l);
             });
+
+            var roles = await context.TaskLookups.Include(l => l.TaskLookupValues).Where(l => l.Name == "Task.Roles").FirstAsync();
+            PO = roles.TaskLookupValues.ToList();
+
         }
 
         lookups.ForEach(l =>

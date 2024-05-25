@@ -1,4 +1,6 @@
-﻿namespace TTask.TaskTree
+﻿using Task;
+
+namespace TTask.TaskTree
 {
     public class TaskTreeNode
     {
@@ -45,7 +47,7 @@
 
         public override string ToString() 
         {
-            return Parent != null ? $"{Parent.ToString()}.{Name}" : Name;
+            return TypeCheck.NotEmpty(Parent) ? $"{Parent.ToString()}.{Name}" : Name;
         }
     }
 }

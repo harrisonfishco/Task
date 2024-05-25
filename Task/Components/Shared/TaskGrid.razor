@@ -1,0 +1,85 @@
+﻿@using System.Reflection
+@using Microsoft.EntityFrameworkCore;
+@using Task.Extensions
+@using Task.ModelObjects
+@inject IDbContextFactory<Context> ContextFactory;
+
+@typeparam PrimaryType where PrimaryType : ModelObject
+
+@if (TypeCheck.NotEmpty(PrimaryObject))
+{
+    <table>
+        <thead>
+            <tr>
+                @foreach (PropertyInfo prop in Properties)
+                {
+                    <th title="@TaskGrid.GetTitle(ObjectType, prop)" >@prop.Name</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (KeyValuePair<Guid, PrimaryType> row in dict)
+            {
+                <tr id="@row.Key">
+                    @foreach (PropertyInfo prop in Properties)
+                    {
+                        <td>
+                            <input @onchange="e => OnChange(e, prop, row.Key)" value="@prop.GetValue(row.Value)" />
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code 
+{
+    [Parameter]
+    public List<PrimaryType> PrimaryObject { get; set; } = new List<PrimaryType>();
+
+    private Type ObjectType { get; set; } = typeof(object);
+
+    private Dictionary<Guid, PrimaryType> dict { get; set; } = new Dictionary<Guid, PrimaryType>();
+
+    private List<PropertyInfo> Properties { get; set; } = new List<PropertyInfo>();
+
+    private void OnChange(ChangeEventArgs e, PropertyInfo prop, Guid identity)
+    {
+        prop.SetValue(dict[identity], e.Value);
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (TypeCheck.NotEmpty(PrimaryObject))
+        {
+            ObjectType = PrimaryObject.First().GetType();
+
+            PropertyInfo[] properties = ObjectType.GetProperties();
+
+            //Make sure we don't include Guid properties
+            Properties = properties.Where(p => p.PropertyType != typeof(Guid)).ToList();
+
+            //Remove all default properties (timestamps)
+            Type mOType = typeof(ModelObject);
+            List<PropertyInfo> excludeProperties = mOType.GetProperties().ToList();
+            Properties.RemoveAll(p => excludeProperties.Select(e => e.Name).Contains(p.Name));
+
+            using(Context context = ContextFactory.CreateDbContext())
+            {
+                PropertyInfo? identity = context.GetPrimaryKey(PrimaryObject.First());
+                if(TypeCheck.NotEmpty(identity))
+                {
+                    PrimaryObject.ForEach(r =>
+                    {
+                        Guid? guid = identity.GetValue(r) as Guid?;
+                        if (TypeCheck.NotEmpty(guid))
+                        {
+                            dict.TryAdd((Guid)guid, r);
+                        }
+                    });
+                }
+            }
+        }
+    }
+}

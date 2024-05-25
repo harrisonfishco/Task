@@ -30,7 +30,7 @@
         {
             TaskUserSession? sess = await ctx.TaskUserSessions.Where(s => s.UserSessionGu == sessionId).FirstOrDefaultAsync();
 
-            if(sess != null)
+            if(TypeCheck.NotEmpty(sess))
             {
                 NavigationManager.NavigateTo("/");
             }
