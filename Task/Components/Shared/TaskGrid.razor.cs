@@ -31,17 +31,20 @@ namespace Task.Components.Shared
 
         public List<TaskGridProperty<T>> Properties { get; } = new List<TaskGridProperty<T>>();
 
+        public TaskGridRowType Type { get; private set; }
+
         public bool Changed
         { 
             get
             {
-                return Properties.Select(p => p.Changed).Any(c => c);
+                return Type == TaskGridRowType.Insert ? true : Properties.Select(p => p.Changed).Any(c => c);
             } 
         }
 
-        public TaskGridRow(T row, List<PropertyInfo> properties)
+        public TaskGridRow(T row, List<PropertyInfo> properties, TaskGridRowType type)
         {
             Row = row;
+            Type = type;
             if(TypeCheck.NotEmpty(properties))
             {
                 properties.ForEach(p =>
@@ -66,6 +69,12 @@ namespace Task.Components.Shared
                 prop.Undo();
             }
         }
+    }
+
+    internal enum TaskGridRowType
+    {
+        Insert,
+        Update
     }
 
     internal class TaskGridProperty<T> where T : ModelObject
