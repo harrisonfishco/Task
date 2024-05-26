@@ -1,0 +1,17 @@
+﻿.grid-center {
+    display: inline-block;
+    margin: 16px 32px 16px 0px;
+}
+
+.label-break > input {
+    display: block;
+    margin: 0px auto;
+}
+
+.checkbox-label {
+    margin: 8px;
+}
+
+.label-break > label{
+    display: block;
+}

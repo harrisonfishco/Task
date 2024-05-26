@@ -1,0 +1,44 @@
+﻿@inherits InputBase<string>
+
+<div>
+    <label for="@instance">@Label</label>
+    <select id="@instance" @bind="@CurrentValue" disabled="@Disabled">
+        <option value=""></option>
+        @foreach (KeyValuePair<string, string> option in Options)
+        {
+            <option value="@option.Key">@option.Value</option>
+        }
+    </select>
+</div>
+
+@code {
+    [Parameter]
+    public ICollection<KeyValuePair<string, string>> Options { get; set; } = new Dictionary<string, string>();
+
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool Disabled { get; set; } = false;
+
+    private Guid instance { get; } = Guid.NewGuid();
+
+    protected override bool TryParseValueFromString(string? value, out string result, out string validationErrorMessage)
+    {
+        if(Options.Select(kv => kv.Key).Contains(value))
+        {
+            KeyValuePair<string, string> res = Options.Where(kv => kv.Value == value).First();
+
+            result = res.Key;
+            CurrentValue = result;
+            validationErrorMessage = string.Empty;
+            return true;
+        }
+        else
+        {
+            validationErrorMessage = "Missing Key";
+            result = string.Empty;
+            return false;
+        }
+    }
+}
