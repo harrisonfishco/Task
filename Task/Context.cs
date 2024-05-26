@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
-using Task.Extensions;
 using Task.Login;
 using Task.Lookup;
 using Task.ModelObjects;

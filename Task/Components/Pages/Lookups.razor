@@ -14,7 +14,7 @@
     <div class="lookup-container">
         <TaskTree RootNodes="@RootNodes" OnSelect="@OnTreeItemClick" />
         <div class="lookup-body">
-            <TaskGrid PrimaryObject="@PO"/>
+            <TaskGrid PrimaryObject="@PO" @ref="grid"/>
         </div>
     </div>
 </TaskSection>
@@ -24,6 +24,8 @@
     public TTask.TaskTree.TaskTreeNodeCollection test = new TaskTreeNodeCollection();
 
     public List<TaskLookupValue> PO { get; set; } = new List<TaskLookupValue>();
+
+    public TaskGrid<TaskLookupValue> grid;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

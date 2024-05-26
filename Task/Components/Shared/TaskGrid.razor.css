@@ -45,3 +45,8 @@ input {
 input:hover, input:focus {
     background-color: rgba(0, 0, 0, 0.05);
 }
+
+.task-grid-action-area
+{
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}

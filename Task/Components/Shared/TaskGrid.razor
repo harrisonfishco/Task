@@ -10,6 +10,13 @@
 {
     <table>
         <thead>
+            <tr class="task-grid-action-area">
+                <th colspan="@(Properties.Count)">
+                    <TaskButton Text="Add" Type="TaskButton.ButtonType.Default" OnClick="AddRow" Compact="true"/>
+                    <TaskButton Text="Save" Type="TaskButton.ButtonType.Positive" OnClick="Save" Compact="true"/>
+                    <TaskButton Text="Undo" Type="TaskButton.ButtonType.Warning" OnClick="Undo" Compact="true"/>
+                </th>
+            </tr>
             <tr>
                 @foreach (PropertyInfo prop in Properties)
                 {
@@ -18,13 +25,13 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (KeyValuePair<Guid, PrimaryType> row in dict)
+            @foreach (KeyValuePair<Guid, TaskGridRow<PrimaryType>> row in dict)
             {
                 <tr id="@row.Key">
                     @foreach (PropertyInfo prop in Properties)
                     {
                         <td>
-                            <input @onchange="e => OnChange(e, prop, row.Key)" value="@prop.GetValue(row.Value)" />
+                            <input @onchange="e => OnChange(e, prop, row.Key)" value="@prop.GetValue(row.Value.Row)" />
                         </td>
                     }
                 </tr>
@@ -40,13 +47,50 @@
 
     private Type ObjectType { get; set; } = typeof(object);
 
-    private Dictionary<Guid, PrimaryType> dict { get; set; } = new Dictionary<Guid, PrimaryType>();
+    private Dictionary<Guid, TaskGridRow<PrimaryType>> dict { get; set; } = new Dictionary<Guid, TaskGridRow<PrimaryType>>();
 
     private List<PropertyInfo> Properties { get; set; } = new List<PropertyInfo>();
 
     private void OnChange(ChangeEventArgs e, PropertyInfo prop, Guid identity)
     {
-        prop.SetValue(dict[identity], e.Value);
+        if(dict.ContainsKey(identity))
+        {
+            TaskGridRow<PrimaryType> row = dict[identity];
+            row.SetValue(prop, e.Value!.ToString()!);
+        }
+
+
+    }
+
+    public void AddRow()
+    {
+        
+    }
+
+    /// <summary>
+    /// Saves all changed records in grid
+    /// </summary>
+    public async Task Save()
+    {
+        using(Context context = ContextFactory.CreateDbContext())
+        {
+            foreach(TaskGridRow<PrimaryType> row in dict.Select(d => d.Value))
+            {
+                context.Update<PrimaryType>(row.Row);
+            }
+            await context.SaveChangesAsync();
+        }
+    }
+
+    /// <summary>
+    /// Undos all changes in grid
+    /// </summary>
+    public void Undo()
+    {
+        foreach(TaskGridRow<PrimaryType> row in dict.Select(d => d.Value))
+        {
+            row.Undo();
+        }
     }
 
     protected override void OnParametersSet()
@@ -75,7 +119,7 @@
                         Guid? guid = identity.GetValue(r) as Guid?;
                         if (TypeCheck.NotEmpty(guid))
                         {
-                            dict.TryAdd((Guid)guid, r);
+                            dict.TryAdd((Guid)guid, new TaskGridRow<PrimaryType>(r, Properties));
                         }
                     });
                 }
