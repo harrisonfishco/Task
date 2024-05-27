@@ -14,7 +14,10 @@
     <div class="lookup-container">
         <TaskTree RootNodes="@RootNodes" OnSelect="@OnTreeItemClick" />
         <div class="lookup-body">
-            <TaskGrid PrimaryObject="@PO" DefaultObject="defaultObject" @ref="grid"/>
+            @if(TypeCheck.NotEmpty(CurrentLookup))
+            {
+                <TaskGrid PrimaryObject="@PO" DefaultObject="defaultObject" @ref="grid" />
+            }
         </div>
     </div>
 </TaskSection>
@@ -28,6 +31,8 @@
     public TaskGrid<TaskLookupValue> grid;
 
     private TaskLookupValue defaultObject = new TaskLookupValue();
+
+    private string? CurrentLookup { get; set; } = null;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -69,9 +74,21 @@
         }
     }
 
-    private void OnTreeItemClick(TaskTreeEventArgs e)
+    private async Task OnTreeItemClick(TaskTreeEventArgs e)
     {
-        Console.WriteLine(e.Item);
+        CurrentLookup = e.Item;
+
+        using(Context context = ContextFactory.CreateDbContext())
+        {
+            TaskLookup lookup = await context.TaskLookups
+                .Include(l => l.TaskLookupValues)
+                .Where(l => l.Name == CurrentLookup)
+                .FirstAsync();
+
+            PO = lookup.TaskLookupValues
+                .OrderBy(l => l.Code)
+                .ToList();
+        }
     }
 
     protected override async Task OnInitializedAsync()

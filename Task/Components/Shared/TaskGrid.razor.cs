@@ -66,6 +66,7 @@ namespace Task.Components.Shared
 
         public void Undo()
         {
+            Delete = false;
             foreach(TaskGridProperty<T> prop in Properties)
             {
                 prop.Undo();
