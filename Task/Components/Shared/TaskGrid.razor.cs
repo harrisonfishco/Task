@@ -41,6 +41,8 @@ namespace Task.Components.Shared
             } 
         }
 
+        public bool Delete { get; set; } = false;
+
         public TaskGridRow(T row, List<PropertyInfo> properties, TaskGridRowType type)
         {
             Row = row;

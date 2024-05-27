@@ -11,13 +11,16 @@
     <table>
         <thead>
             <tr class="task-grid-action-area">
-                <th colspan="@(Properties.Count)">
+                <th colspan="@(Properties.Count + 1)">
                     <TaskButton Text="Add" Type="TaskButton.ButtonType.Default" OnClick="AddRow" Compact="true"/>
                     <TaskButton Text="Save" Type="TaskButton.ButtonType.Positive" OnClick="Save" Compact="true"/>
                     <TaskButton Text="Undo" Type="TaskButton.ButtonType.Warning" OnClick="Undo" Compact="true"/>
                 </th>
             </tr>
             <tr>
+                <th>
+                    <input type="checkbox" @onchange="OnCheckAllChange"/>
+                </th>
                 @foreach (PropertyInfo prop in Properties)
                 {
                     <th title="@TaskGrid.GetTitle(ObjectType, prop)" >@prop.Name</th>
@@ -27,11 +30,14 @@
         <tbody>
             @foreach (KeyValuePair<Guid, TaskGridRow<PrimaryType>> row in dict)
             {
-                <tr id="@row.Key">
+                <tr id="@row.Key" class="@(row.Value.Delete ? "task-grid-row-delete" : "")">
+                    <td>
+                        <input type="checkbox" @bind="row.Value.Delete"/>
+                    </td>
                     @foreach (PropertyInfo prop in Properties)
                     {
                         <td>
-                            <input @onchange="e => OnChange(e, prop, row.Key)" value="@prop.GetValue(row.Value.Row)" />
+                            <input @onchange="e => OnChange(e, prop, row.Key)" value="@prop.GetValue(row.Value.Row)" disabled="@(row.Value.Delete)"/>
                         </td>
                     }
                 </tr>
@@ -55,6 +61,19 @@
     private List<PropertyInfo> Properties { get; set; } = new List<PropertyInfo>();
 
     private List<PropertyInfo> DefaultProperties { get; set; } = new List<PropertyInfo>();
+
+    private bool CheckAll { get; set; } = false;
+
+    private void OnCheckAllChange(ChangeEventArgs e)
+    {
+        foreach(TaskGridRow<PrimaryType> row in dict.Select(d => d.Value))
+        {
+            if(TypeCheck.NotEmpty(e.Value))
+            {
+                row.Delete = (bool)e.Value;
+            }
+        }
+    }
 
     private void OnChange(ChangeEventArgs e, PropertyInfo prop, Guid identity)
     {
@@ -102,9 +121,21 @@
         {
             foreach(TaskGridRow<PrimaryType> row in dict.Select(d => d.Value))
             {
-                context.Update<PrimaryType>(row.Row);
+                if(row.Delete && row.Type == TaskGridRowType.Update)
+                {
+                    context.Remove<PrimaryType>(row.Row);
+                }
+                else if(row.Delete == false)
+                {
+                    context.Update<PrimaryType>(row.Row);
+                }
             }
             await context.SaveChangesAsync();
+            //Remove delete rows after success
+            foreach(KeyValuePair<Guid, TaskGridRow<PrimaryType>> row in dict.Where(r => r.Value.Delete))
+            {
+                dict.Remove(row.Key);
+            }
         }
     }
 

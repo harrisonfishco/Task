@@ -33,6 +33,10 @@ tbody > tr:not(:last-child)
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 }
 
+.task-grid-row-delete {
+    background-color: rgba(255, 0, 0, 0.2);
+}
+
 input {
     width: -webkit-fill-available;
     background-color: transparent;
@@ -42,7 +46,7 @@ input {
     transition: background-color 0.2s;
 }
 
-input:hover, input:focus {
+input:hover:not(:disabled), input:focus:not(:disabled) {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
