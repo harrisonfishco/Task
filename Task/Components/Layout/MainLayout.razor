@@ -3,6 +3,7 @@
 @inject IDbContextFactory<Context> ContextFactory;
 @inject Session session;
 @inject NavigationManager NavigationManager;
+@using Task.Components.Shared;
 
 <div class="page">
     <div class="sidebar">
@@ -20,18 +21,23 @@
                 <ChildContent>
                     @Body
                 </ChildContent>
-                <ErrorContent>
-                    <h1>YOU DID A MISTAKE FOO</h1>
+                <ErrorContent Context="Exception">
+                    <TaskModal Title="Error" Text="@Exception.Message" OnClose="@OnErrorDialogClose" DialogType="TaskModal.ModalDialogType.Ok"></TaskModal>
                 </ErrorContent>
             </ErrorBoundary>
-
         </article>
     </main>
 </div>
 
 
 @code {
+
     private ErrorBoundary? errorBoundary;
+
+    private void OnErrorDialogClose(bool accepted)
+    {
+        StateHasChanged();
+    }
 
     // Checks if user is logged in
     protected override async Task OnAfterRenderAsync(bool firstRender)

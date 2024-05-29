@@ -1,5 +1,74 @@
-﻿<h3>Component</h3>
-
+﻿@if (Open)
+{
+    <div class="modal fade show" id="myModal" style="display:block; background-color: rgba(10,10,10,.8);" aria-modal="true" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">@Title</h4>
+                    <button type="button" class="close" @onclick="@ModalCancel">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>@Text</p>
+                </div>
+                <div class="modal-footer">
+                    @switch (DialogType)
+                    {
+                        case ModalDialogType.Ok:
+                            <button type="button" class="btn btn-primary" @onclick=@ModalOk>OK</button>
+                            break;
+                        case ModalDialogType.OkCancel:
+                            <button type="button" class="btn" @onclick="@ModalCancel">Cancel</button>
+                            <button type="button" class="btn btn-primary" @onclick=@ModalOk>OK</button>
+                            break;
+                        case ModalDialogType.DeleteCancel:
+                            <button type="button" class="btn" @onclick="@ModalCancel">Cancel</button>
+                            <button type="button" class="btn btn-danger" @onclick=@ModalOk>Delete</button>
+                            break;
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+﻿
 @code {
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
 
+    [Parameter]
+    public string Text { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<bool> OnClose { get; set; }
+
+    [Parameter]
+    public ModalDialogType DialogType { get; set; }
+
+    private bool Open { get; set; } = true;
+
+    private int i { get; set; } = 0;
+
+    public void Show()
+    {
+        Open = true;
+    }
+
+    private Task ModalCancel()
+    {
+        Open = false;
+        return OnClose.InvokeAsync(false);
+    }
+
+    private Task ModalOk()
+    {
+        Open = false;
+        return OnClose.InvokeAsync(true);
+    }
+
+    public enum ModalDialogType
+    {
+        Ok,
+        OkCancel,
+        DeleteCancel
+    }
 }
