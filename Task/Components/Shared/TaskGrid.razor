@@ -1,0 +1,199 @@
+﻿@using System.Reflection
+@using Microsoft.EntityFrameworkCore;
+@using Task.Extensions
+@using Task.ModelObjects
+@inject IDbContextFactory<Context> ContextFactory;
+
+@typeparam PrimaryType where PrimaryType : ModelObject
+
+@if (TypeCheck.NotEmpty(PrimaryObject))
+{
+    <table>
+        <thead>
+            <tr class="task-grid-action-area">
+                <th colspan="@(Properties.Count + 1)">
+                    <TaskButton Text="Add" Type="TaskButton.ButtonType.Default" OnClick="AddRow" Compact="true"/>
+                    <TaskButton Text="Save" Type="TaskButton.ButtonType.Positive" OnClick="Save" Compact="true"/>
+                    <TaskButton Text="Undo" Type="TaskButton.ButtonType.Warning" OnClick="Undo" Compact="true"/>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <input type="checkbox" @onchange="OnCheckAllChange"/>
+                </th>
+                @foreach (PropertyInfo prop in Properties)
+                {
+                    <th title="@TaskGrid.GetTitle(ObjectType, prop)" >@prop.Name</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (KeyValuePair<Guid, TaskGridRow<PrimaryType>> row in dict)
+            {
+                <tr id="@row.Key" class="@(row.Value.Delete ? "task-grid-row-delete" : "")">
+                    <td>
+                        <input type="checkbox" @bind="row.Value.Delete"/>
+                    </td>
+                    @foreach (PropertyInfo prop in Properties)
+                    {
+                        <td>
+                            <input @onchange="e => OnChange(e, prop, row.Key)" value="@prop.GetValue(row.Value.Row)" disabled="@(row.Value.Delete)"/>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code 
+{
+    [Parameter]
+    public List<PrimaryType> PrimaryObject { get; set; } = new List<PrimaryType>();
+
+    [Parameter]
+    public PrimaryType? DefaultObject { get; set; } = null;
+
+    private Type ObjectType { get; set; } = typeof(object);
+
+    private Dictionary<Guid, TaskGridRow<PrimaryType>> dict { get; set; } = new Dictionary<Guid, TaskGridRow<PrimaryType>>();
+
+    private List<PropertyInfo> Properties { get; set; } = new List<PropertyInfo>();
+
+    private List<PropertyInfo> DefaultProperties { get; set; } = new List<PropertyInfo>();
+
+    private bool CheckAll { get; set; } = false;
+
+    private void OnCheckAllChange(ChangeEventArgs e)
+    {
+        foreach(TaskGridRow<PrimaryType> row in dict.Select(d => d.Value))
+        {
+            if(TypeCheck.NotEmpty(e.Value))
+            {
+                row.Delete = (bool)e.Value;
+            }
+        }
+    }
+
+    private void OnChange(ChangeEventArgs e, PropertyInfo prop, Guid identity)
+    {
+        if(dict.ContainsKey(identity))
+        {
+            TaskGridRow<PrimaryType> row = dict[identity];
+            string? value = TypeCheck.NotEmpty(e.Value) ? e.Value.ToString() : null;
+            row.SetValue(prop, value);
+        }
+    }
+
+    public void AddRow()
+    {
+        PrimaryType? newRow = Activator.CreateInstance(typeof(PrimaryType)) as PrimaryType;
+
+        Properties.ForEach(p =>
+        {
+            p.SetValue(newRow, null);
+        });
+
+        if(TypeCheck.NotEmpty(DefaultObject))
+        {
+            DefaultProperties.ForEach(p =>
+           {
+               object? value = p.GetValue(DefaultObject);
+               if(TypeCheck.NotEmpty(value))
+               {
+                   p.SetValue(newRow, value);
+               }
+           });
+        }
+
+        if(TypeCheck.NotEmpty(newRow))
+        {
+            dict.Add(Guid.NewGuid(), new TaskGridRow<PrimaryType>(newRow, Properties, TaskGridRowType.Insert));
+        }
+    }
+
+    /// <summary>
+    /// Saves all changed records in grid
+    /// </summary>
+    public async Task Save()
+    {
+        using(Context context = ContextFactory.CreateDbContext())
+        {
+            foreach(TaskGridRow<PrimaryType> row in dict.Select(d => d.Value))
+            {
+                if(row.Delete && row.Type == TaskGridRowType.Update)
+                {
+                    context.Remove<PrimaryType>(row.Row);
+                }
+                else if(row.Delete == false)
+                {
+                    context.Update<PrimaryType>(row.Row);
+                }
+            }
+            await context.SaveChangesAsync();
+            //Remove delete rows after success
+            foreach(KeyValuePair<Guid, TaskGridRow<PrimaryType>> row in dict.Where(r => r.Value.Delete))
+            {
+                dict.Remove(row.Key);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Undos all changes in grid
+    /// </summary>
+    public void Undo()
+    {
+        foreach(KeyValuePair<Guid, TaskGridRow<PrimaryType>> row in dict)
+        {
+            if(row.Value.Type == TaskGridRowType.Insert)
+            {
+                dict.Remove(row.Key);
+            }
+            else
+            {
+                row.Value.Undo();
+            }
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (TypeCheck.NotEmpty(PrimaryObject))
+        {
+            ObjectType = PrimaryObject.First().GetType();
+
+            PropertyInfo[] properties = ObjectType.GetProperties();
+
+            //Make sure we don't include Guid properties
+            Properties = properties.Where(p => p.PropertyType != typeof(Guid)).ToList();
+
+            //Remove all default properties (timestamps)
+            Type mOType = typeof(ModelObject);
+            List<PropertyInfo> excludeProperties = mOType.GetProperties().ToList();
+            Properties.RemoveAll(p => excludeProperties.Select(e => e.Name).Contains(p.Name));
+
+            using(Context context = ContextFactory.CreateDbContext())
+            {
+                PropertyInfo? identity = context.GetPrimaryKey(PrimaryObject.First());
+                if(TypeCheck.NotEmpty(identity))
+                {
+                    PrimaryObject.ForEach(r =>
+                    {
+                        Guid? guid = identity.GetValue(r) as Guid?;
+                        if (TypeCheck.NotEmpty(guid))
+                        {
+                            dict.TryAdd((Guid)guid, new TaskGridRow<PrimaryType>(r, Properties, TaskGridRowType.Update));
+                        }
+                    });
+                }
+            }
+
+            if(TypeCheck.NotEmpty(DefaultObject))
+            {
+                properties = ObjectType.GetProperties();
+                DefaultProperties = properties.Where(p => TypeCheck.NotEmpty(p.GetValue(DefaultObject))).ToList();
+            }
+        }
+    }
+}
