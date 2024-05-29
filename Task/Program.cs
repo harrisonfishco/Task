@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Task.Components;
+using Task.Notifications;
 
 namespace Task
 {
@@ -27,6 +28,7 @@ namespace Task
             builder.Services.AddDbContextFactory<Context>(options => options.UseSqlServer(connectionString));
             builder.Services.AddDbContext<Context>(options => options.UseSqlServer(connectionString));
             builder.Services.AddScoped<Session>();
+            builder.Services.AddScoped<NotificationService>();
 
             var app = builder.Build();
 

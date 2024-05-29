@@ -24,15 +24,38 @@
     <br />
 </TaskSection>
 
+@if (user.Role == "0")
+{
+    <TaskSection Title="SMTP Settings">
+        <TaskTextInput Disabled="false" Label="From Mailbox Name" @bind-Value="SmtpSettings.FromMailboxName" />
+        <TaskTextInput Disabled="false" Label="From Email" @bind-Value="SmtpSettings.FromEmail" />
+        <br />
+        <TaskTextInput Disabled="false" Label="Smtp Server" Type="TaskTextInput.InputType.Default" @bind-Value="SmtpSettings.SmtpServer" />
+        <TaskTextInput Disabled="false" Label="Smtp Username(Email)" Type="TaskTextInput.InputType.Default" @bind-Value="SmtpSettings.SmtpUsername" />
+        <TaskTextInput Disabled="false" Label="Smtp Password" Type="TaskTextInput.InputType.Password" @bind-Value="SmtpSettings.SmtpPassword" />
+        <TaskTextInput Disabled="false" Label="Smtp Port" Type="TaskTextInput.InputType.Numeric" @bind-Value="SmtpSettings.SmtpPassword" />
+        <br />
+        <TaskButton OnClick="Test" Text="Test" Type="TaskButton.ButtonType.Default"/>
+        <br />
+        @if (test)
+        {
+            <TaskButton OnClick="Save" Text="Test" Type="TaskButton.ButtonType.Default"/>
+        }
+    </TaskSection>
+}
+
 @code {
     private TaskUser user = new TaskUser();
     private KeyValuePair<string, string> role;
+    private bool test = false;
 
     public string FullName { get; set; } = string.Empty;
     public string NewPassword { get; set; } = string.Empty;
     public string ConfirmPassword { get; set; } = string.Empty;
     public string UserRole { get; set; } = string.Empty;
     public Dictionary<string, string> Roles { get; set; } = new Dictionary<string, string>();
+
+    internal SmtpSettings SmtpSettings { get; set; } = new SmtpSettings();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -83,6 +106,19 @@
                 await context.SaveChangesAsync();
             }
             NewPassword = ConfirmPassword = string.Empty;
+        }
+    }
+
+    private void Test()
+    {
+        test = true;
+    }
+
+    private void Save()
+    {
+        if(test)
+        {
+            //Save values to file
         }
     }
 }

@@ -29,6 +29,9 @@
             case InputType.Password:
                 res = "password";
                 break;
+            case InputType.Numeric:
+                res = "number";
+                break;
         }
         return res;
     }
@@ -43,6 +46,7 @@
     public enum InputType
     {
         Default,
-        Password
+        Password,
+        Numeric,
     }
 }
