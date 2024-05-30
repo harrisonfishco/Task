@@ -14,6 +14,17 @@
 
     private void IncrementCount()
     {
-        currentCount++;
+        try
+        {
+            currentCount++;
+            if (currentCount > 5)
+            {
+                TaskError.CreateUserError("Current count is too big!");
+            }
+        }
+        catch(Exception e)
+        {
+            TaskError.HandleError(e);
+        }
     }
 }
