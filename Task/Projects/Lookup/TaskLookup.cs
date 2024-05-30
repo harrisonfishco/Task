@@ -33,6 +33,9 @@ namespace Task.Lookup
                     AddTimestamp = DateTime.Now
                 });
 
+            modelBuilder.Entity<TaskLookupValue>()
+                .HasAlternateKey(e => e.Code);
+
             modelBuilder.Entity<TaskLookupValue>().HasData(
                 [
                     new TaskLookupValue()

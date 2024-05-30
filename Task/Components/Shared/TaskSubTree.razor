@@ -1,0 +1,41 @@
+﻿@using TTask.TaskTree;
+
+<div>
+    <span class="task-tree-category" @onclick="Toggle">
+        <span class="task-icon @GetCaret()"/>
+        @Label
+    </span>
+    <div class="task-tree-section" hidden="@collpased">
+        @foreach (TaskTreeNode child in Node.Children)
+        {
+            <TaskSubTree Node="@child" Label="@child.Name" OnItemClick="OnItemClick"/>
+        }
+        @foreach (string item in Node.Items)
+        {
+            <span @onclick="(() => OnItemClick.InvokeAsync(new TaskTreeEventArgs(Node.ToString() + '.' + item)))" class="task-tree-item">@item</span>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public TaskTreeNode Node { get; set; }
+
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<TaskTreeEventArgs> OnItemClick { get; set; }
+
+    private bool collpased = true;
+
+    private void Toggle()
+    {
+        collpased = !collpased;
+    }
+
+    private string GetCaret()
+    {
+        return collpased ? "task-icon-collapsed" : "task-icon-expanded";
+    }
+}
