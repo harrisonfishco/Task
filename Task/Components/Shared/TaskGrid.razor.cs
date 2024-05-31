@@ -72,6 +72,15 @@ namespace Task.Components.Shared
                 prop.Undo();
             }
         }
+
+        public void ConvertToInsert()
+        {
+            Type = TaskGridRowType.Update;
+            Properties.ForEach(r =>
+            {
+                r.ConvertToUpdate();
+            });
+        }
     }
 
     internal enum TaskGridRowType
@@ -127,6 +136,11 @@ namespace Task.Components.Shared
         public void Undo()
         {
             Value = OldValue;
+        }
+
+        public void ConvertToUpdate()
+        {
+            OldValue = Value;
         }
     }
 }

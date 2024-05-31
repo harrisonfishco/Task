@@ -1,4 +1,5 @@
 ﻿@using System.Reflection
+@using System.ComponentModel.DataAnnotations;
 @using Microsoft.EntityFrameworkCore;
 @using Task.Extensions
 @using Task.ModelObjects
@@ -135,7 +136,22 @@
             foreach(KeyValuePair<Guid, TaskGridRow<PrimaryType>> row in dict.Where(r => r.Value.Delete))
             {
                 dict.Remove(row.Key);
+
+                PropertyInfo? pk = Properties.FirstOrDefault(p => TypeCheck.NotEmpty(p.GetCustomAttribute(typeof(KeyAttribute), true)));
+
+                if(TypeCheck.NotEmpty(pk))
+                {
+                    PrimaryObject.RemoveAll(p => (Guid)pk.GetValue(p) == row.Key);
+                }
             }
+            foreach(KeyValuePair<Guid, TaskGridRow<PrimaryType>> row in dict.Where(r => r.Value.Type == TaskGridRowType.Insert))
+            {
+                row.Value.ConvertToInsert();
+                PrimaryObject.Add(row.Value.Row);
+                dict.Remove(row.Key);
+            }
+            dict.Clear();
+            OnParametersSet();
         }
     }
 
