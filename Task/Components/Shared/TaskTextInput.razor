@@ -1,4 +1,5 @@
-﻿@inherits InputBase<string>
+﻿@typeparam T
+@inherits InputBase<T>
 
 <div>
     <label for="@instance">@Label</label>
@@ -36,11 +37,66 @@
         return res;
     }
 
+    /*
     protected override bool TryParseValueFromString(string? value, out string result, out string validationErrorMessage)
-    {
+        {
         result = value ?? string.Empty;
         validationErrorMessage = string.Empty;
         return true;
+    }
+    */
+
+    protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage)
+    {
+        bool res = false;
+        result = default;
+        validationErrorMessage = null;
+        try
+        {
+            if (result is string)
+            {
+                result = (T)(object)value;
+                res = true;
+            }
+            else if (result is int)
+            {
+                if (int.TryParse(value, out var intValue))
+                {
+                    result = (T)(object)intValue;
+                    res = true;
+                }
+            }
+            else if (result is double)
+            {
+                if (double.TryParse(value, out var doubleValue))
+                {
+                    result = (T)(object)doubleValue;
+                    res = true;
+                }
+            }
+            else if (result is short)
+            {
+                if (short.TryParse(value, out var shortValue))
+                {
+                    result = (T)(object)shortValue;
+                    res = true;
+                }
+            }
+            else 
+            {
+                throw new NotSupportedException($"Type {typeof(T).Name} is not supported");
+            }
+            //float
+            //short
+
+            result = default;
+        }
+        catch (Exception)
+        {
+            result = default;
+            validationErrorMessage = "The input is not valid.";
+        }
+        return res;
     }
 
     public enum InputType
