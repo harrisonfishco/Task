@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel;
 
 namespace Task
 {
@@ -29,10 +28,6 @@ namespace Task
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid TaskGu { get; set; }
-
-        [Required]
-        [DefaultValue("")]
-        public int Number { get; set; }
 
         [Required]
         [StringLength(100)]
