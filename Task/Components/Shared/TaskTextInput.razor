@@ -68,6 +68,7 @@
             }
             else if (result is double)
             {
+                //TODO: change vars to primitive types
                 if (double.TryParse(value, out var doubleValue))
                 {
                     result = (T)(object)doubleValue;
@@ -86,8 +87,7 @@
             {
                 throw new NotSupportedException($"Type {typeof(T).Name} is not supported");
             }
-            //float
-            //short
+            //TODO: float
 
             result = default;
         }
