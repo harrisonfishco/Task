@@ -7,6 +7,9 @@
 @inject IDbContextFactory<Context> ContextFactory;
 @inject NavigationManager NavigationManager;
 
+@using Notifications;
+@inject NotificationService Email;
+
 <PageTitle>Task - Settings</PageTitle>
 
 <h1>Settings - @user.Role</h1>
@@ -17,8 +20,8 @@
     <br />
     <TaskDropDown Label="Role" Options="@Roles" @bind-Value="UserRole" Disabled="true"></TaskDropDown>
     <br />
-@*     <TaskTextInput Label="Password" Type="TaskTextInput.InputType.Password" @bind-Value="NewPassword"/>
-    <TaskTextInput Label="Repeat Password" Type="TaskTextInput.InputType.Password" @bind-Value="ConfirmPassword"/> *@
+    <TaskTextInput Label="Password" Type="TaskTextInput<string>.InputType.Password" @bind-Value="NewPassword"/>
+    <TaskTextInput Label="Repeat Password" Type="TaskTextInput<string>.InputType.Password" @bind-Value="ConfirmPassword"/>
     <!--This button should be replace by TaskButton once implemented-->
     <button @onclick="UpdatePassword">Change Password</button>
     <br />
@@ -30,13 +33,14 @@
         <TaskTextInput Disabled="false" Label="From Mailbox Name" @bind-Value="SmtpSettings.FromMailboxName" />
         <TaskTextInput Disabled="false" Label="From Email" @bind-Value="SmtpSettings.FromEmail" />
         <br />
-@*         <TaskTextInput Disabled="false" Label="Smtp Server" Type="TaskTextInput.InputType.Default" @bind-Value="SmtpSettings.SmtpServer" />
-        <TaskTextInput Disabled="false" Label="Smtp Username(Email)" Type="TaskTextInput.InputType.Default" @bind-Value="SmtpSettings.SmtpUsername" />
-        <TaskTextInput Disabled="false" Label="Smtp Password" Type="TaskTextInput.InputType.Password" @bind-Value="SmtpSettings.SmtpPassword" /> *@
-        <TaskTextInput Disabled="false" Label="Smtp Port" Type="TaskTextInput<short>.InputType.Numeric" @bind-Value="SmtpSettings.SmtpPort" />
+        <TaskTextInput Disabled="false" Label="Smtp Server" @bind-Value="SmtpSettings.SmtpServer" />
+        <TaskTextInput Disabled="false" Label="Smtp Username(Email)" @bind-Value="SmtpSettings.SmtpUsername" />
+        <TaskTextInput Disabled="false" Label="Smtp Password" Type="TaskTextInput<string>.InputType.Password" @bind-Value="SmtpSettings.SmtpPassword" />
+        <TaskTextInput Disabled="false" Label="Smtp Port" Type="TaskTextInput<short>.InputType.Short" @bind-Value="SmtpSettings.SmtpPort"/>
         <br />
         <TaskButton OnClick="Test" Text="Test" Type="TaskButton.ButtonType.Default"/>
         <br />
+        <Task.Components.Shared.TaskButton OnClick="SendMail" Text="Send Mail" Type="Shared.TaskButton.ButtonType.Default" />
         @if (test)
         {
             <TaskButton OnClick="Save" Text="Test" Type="TaskButton.ButtonType.Default"/>
@@ -109,16 +113,23 @@
         }
     }
 
+    public void SendMail()
+    {
+        Email.Notification.Send(user, "Subject", "Message");
+    }
+
+    //Test newly entered smtp settings (test with smtp.dreamhost.com)
     private void Test()
     {
         test = true;
     }
 
+    //Save tested and working smtp settings (next to the exe the working path)
     private void Save()
     {
         if(test)
         {
-            //Save values to file
+           
         }
     }
 }

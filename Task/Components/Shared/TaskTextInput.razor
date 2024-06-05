@@ -3,7 +3,7 @@
 
 <div>
     <label for="@instance">@Label</label>
-    <input id="@instance" type="@GetInputType()" @bind="@CurrentValue" disabled="@Disabled"/>
+    <input id="@instance" type="@GetInputType()" @bind="@CurrentValue" disabled="@Disabled" maxlength="@Maxlength"/>
 </div>
 
 @code {
@@ -15,6 +15,9 @@
 
     [Parameter]
     public InputType Type { get; set; } = InputType.Default;
+
+    //TODO: make a task for properly setting up maxlength constraint
+    private short Maxlength { get; set; } = 999;
 
     private Guid instance = Guid.NewGuid();
 
@@ -30,21 +33,25 @@
             case InputType.Password:
                 res = "password";
                 break;
-            case InputType.Numeric:
+            case InputType.Integer:
                 res = "number";
+                Maxlength = 11;
+                break;
+            case InputType.Float:
+                res = "number";
+                Maxlength = 15;
+                break;
+            case InputType.Short:
+                res = "number";
+                Maxlength = 6;
+                break;
+            case InputType.Double:
+                res = "number";
+                Maxlength = 24;
                 break;
         }
         return res;
     }
-
-    /*
-    protected override bool TryParseValueFromString(string? value, out string result, out string validationErrorMessage)
-        {
-        result = value ?? string.Empty;
-        validationErrorMessage = string.Empty;
-        return true;
-    }
-    */
 
     protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage)
     {
@@ -60,7 +67,7 @@
             }
             else if (result is int)
             {
-                if (int.TryParse(value, out var intValue))
+                if (int.TryParse(value, out int intValue))
                 {
                     result = (T)(object)intValue;
                     res = true;
@@ -68,8 +75,7 @@
             }
             else if (result is double)
             {
-                //TODO: change vars to primitive types
-                if (double.TryParse(value, out var doubleValue))
+                if (double.TryParse(value, out double doubleValue))
                 {
                     result = (T)(object)doubleValue;
                     res = true;
@@ -77,9 +83,17 @@
             }
             else if (result is short)
             {
-                if (short.TryParse(value, out var shortValue))
+                if (short.TryParse(value, out short shortValue))
                 {
                     result = (T)(object)shortValue;
+                    res = true;
+                }
+            }
+            else if (result is float)
+            {
+                if (float.TryParse(value, out float floatValue))
+                {
+                    result = (T)(object)floatValue;
                     res = true;
                 }
             }
@@ -87,7 +101,6 @@
             {
                 throw new NotSupportedException($"Type {typeof(T).Name} is not supported");
             }
-            //TODO: float
 
             result = default;
         }
@@ -103,6 +116,9 @@
     {
         Default,
         Password,
-        Numeric,
+        Integer,
+        Float,
+        Short,
+        Double,
     }
 }

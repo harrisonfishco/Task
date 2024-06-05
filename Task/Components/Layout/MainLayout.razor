@@ -19,7 +19,6 @@
 
         <article class="content px-4">
             @Body
-            <Task.Components.Shared.TaskButton OnClick="SendMail" Text="Send Mail" Type="Shared.TaskButton.ButtonType.Default" />
         </article>
     </main>
 </div>
@@ -31,11 +30,6 @@
 </div>
 
 @code {
-    public void SendMail()
-    {
-        Email.Notification.Send(null, null, null);
-    }
-
     // Checks if user is logged in
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

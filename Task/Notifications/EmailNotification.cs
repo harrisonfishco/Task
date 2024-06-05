@@ -9,18 +9,15 @@ namespace Task.Notifications
     {
         public void Send(TaskUser to, string subject, string message, NotificationContentType type = NotificationContentType.Info)
         {
+            //TODO: using parameters (not hardcoding) and take from the saved settings
             var email = new MimeMessage();
             email.From.Add(new MailboxAddress("Vanessa Hegmann", "vanessa.hegmann@ethereal.email"));
-            email.To.Add(new MailboxAddress("Vanessa Hegmann", "vanessa.hegmann@ethereal.email"));
-            email.Subject = "TESTING EMAIL WITH ETHEREAL";
+            email.To.Add(new MailboxAddress(to.FullName, to.Email));
+            email.Subject = subject;
 
             email.Body = new TextPart("plain")
             {
-                Text = @"Hey Chandler,
-
-                I just wanted to let you know that Monica and I were going to go play some paintball, you in?
-
-                -- Joey"
+                Text = message
             };
 
             using (var client = new SmtpClient())
@@ -34,19 +31,5 @@ namespace Task.Notifications
                 client.Disconnect(true);
             }
         }
-
-        //from mailbox name
-        //from email
-        //smtp server
-        //smtp username(email addy)
-        //smtp passwrod(your password)
-        //smtp port (default = 587)
-
-        //test button (sending to current user)
-        //save button (enable if valid request was sent)
-
-        //store in a file (next to the exe the working path)
-
-        //test with smtp.dreamhost.com
     }
 }
