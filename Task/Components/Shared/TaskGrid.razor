@@ -1,12 +1,13 @@
 ﻿@using System.Reflection
 @using Microsoft.EntityFrameworkCore;
+@using System.ComponentModel.DataAnnotations;
 @using Task.Extensions
 @using Task.ModelObjects
 @inject IDbContextFactory<Context> ContextFactory;
 
 @typeparam PrimaryType where PrimaryType : ModelObject
 
-@if (TypeCheck.NotEmpty(PrimaryObject))
+@if (PrimaryObject != null)
 {
     <table>
         <thead>
@@ -61,6 +62,8 @@
     private List<PropertyInfo> Properties { get; set; } = new List<PropertyInfo>();
 
     private List<PropertyInfo> DefaultProperties { get; set; } = new List<PropertyInfo>();
+
+    private PropertyInfo PrimaryKey { get; set; }
 
     private bool CheckAll { get; set; } = false;
 
@@ -159,9 +162,9 @@
 
     protected override void OnParametersSet()
     {
-        if (TypeCheck.NotEmpty(PrimaryObject))
+        if (PrimaryObject != null)
         {
-            ObjectType = PrimaryObject.First().GetType();
+            ObjectType = PrimaryObject.GetType().GenericTypeArguments.First();
 
             PropertyInfo[] properties = ObjectType.GetProperties();
 
@@ -173,14 +176,17 @@
             List<PropertyInfo> excludeProperties = mOType.GetProperties().ToList();
             Properties.RemoveAll(p => excludeProperties.Select(e => e.Name).Contains(p.Name));
 
+            //Find Primary Key
+            properties = ObjectType.GetProperties().Where(p => p.PropertyType == typeof(Guid)).ToArray();
+            PrimaryKey = properties.FirstOrDefault(p => TypeCheck.NotEmpty(p.GetCustomAttribute(typeof(KeyAttribute), true)));
+
             using(Context context = ContextFactory.CreateDbContext())
             {
-                PropertyInfo? identity = context.GetPrimaryKey(PrimaryObject.First());
-                if(TypeCheck.NotEmpty(identity))
+                if(TypeCheck.NotEmpty(PrimaryKey))
                 {
                     PrimaryObject.ForEach(r =>
                     {
-                        Guid? guid = identity.GetValue(r) as Guid?;
+                        Guid? guid = PrimaryKey.GetValue(r) as Guid?;
                         if (TypeCheck.NotEmpty(guid))
                         {
                             dict.TryAdd((Guid)guid, new TaskGridRow<PrimaryType>(r, Properties, TaskGridRowType.Update));
