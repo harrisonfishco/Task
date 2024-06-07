@@ -1,0 +1,28 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+ARG BRANCH=master
+ARG TASK_CONNECTIONSTRING
+ENV TASK_CONNECTIONSTRING=${TASK_CONNECTIONSTRING}
+WORKDIR /App
+
+WORKDIR /
+RUN git clone --single-branch --branch ${BRANCH} https://github.com/harrisonfishco/Task.git
+
+WORKDIR /App
+RUN cp /Task/Task/* ./ -r
+
+RUN dotnet restore ./Task.csproj
+RUN dotnet publish ./Task.csproj -c Release -o out
+
+WORKDIR /
+
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
+
+RUN apt-get update
+RUN apt install -y dos2unix
+
+COPY ./Scripts /Scripts/
+RUN dos2unix /Scripts/migrate.sh
+RUN ["chmod", "+x", "/Scripts/migrate.sh"]
+
+ENTRYPOINT ["/Scripts/migrate.sh"]
