@@ -26,7 +26,7 @@ services:
     ports:
       - 1433:1433
     environment:
-      SA_PASSWORD: ${SAPASSWORD}
+      SA_PASSWORD: "tasktasktask1!"
       ACCEPT_EULA: "Y"
     networks:
       - task-network
