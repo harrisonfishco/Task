@@ -1,0 +1,16 @@
+﻿@using Task.Components.Layout;
+@using Task.Models;
+
+@page "/Projects"
+@page "/Projects/{number}"
+@layout ModelLayout<TaskProject>
+
+@code {
+    [Parameter]
+    public string? Number { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        
+    }
+}

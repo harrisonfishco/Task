@@ -27,5 +27,10 @@ namespace Task.Models
         public TaskUser Owner { get; set; }
 
         public ICollection<TaskTask>? Tasks { get; set; }
+
+        public override string GetName()
+        {
+            return "Project";
+        }
     }
 }

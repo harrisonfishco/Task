@@ -17,6 +17,7 @@
 
         <article class="content px-4">
             @Body
+            @ChildContent
         </article>
     </main>
 </div>
@@ -28,6 +29,9 @@
 </div>
 
 @code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
     // Checks if user is logged in
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

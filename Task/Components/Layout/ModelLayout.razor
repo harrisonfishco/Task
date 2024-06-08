@@ -1,0 +1,43 @@
+﻿@using Microsoft.EntityFrameworkCore;
+@using Task.ModelObjects;
+@using Task.Components.Shared;
+@using System.Reflection;
+
+@inherits MainLayout
+
+@typeparam T where T : ModelObject;
+
+<MainLayout>
+    <h1>@GetTitle()</h1>
+    <TaskSection Title="Properties">
+        @foreach(PropertyInfo prop in Properties)
+        {
+            switch(prop.PropertyType)
+            {
+                default:
+                    <TaskTextInput DisplayName="@prop.Name" @bind-Value="PropertyValues[prop.Name]"/>
+                    break;
+            }
+        }
+    </TaskSection>
+    @Body
+</MainLayout>
+
+@code {
+    protected Type Type { get; set; } = typeof(T);
+
+    protected List<PropertyInfo> Properties { get; set; } = ModelObject.GetProperties<T>();
+
+    private Dictionary<string, string> PropertyValues { get; } = new Dictionary<string, string>();
+
+    [Parameter]
+    public string? Number { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        foreach(PropertyInfo prop in Properties)
+        {
+            PropertyValues.Add(prop.Name, string.Empty);
+        }
+    }
+}

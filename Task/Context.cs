@@ -6,17 +6,19 @@ using System.Reflection;
 using Task.Login;
 using Task.Lookup;
 using Task.ModelObjects;
+using Task.Models;
 
 namespace Task
 {
     public class Context : DbContext
-    { 
+    {
 
         public DbSet<TaskUser> TaskUsers { get; set; }
         public DbSet<TaskUserSession> TaskUserSessions { get; set; }
         public DbSet<TaskLookup> TaskLookups { get; set; }
         public DbSet<TaskLookupValue> TaskLookupValues { get; set; }
         public DbSet<TaskTask> Tasks { get; set; }
+        public DbSet<TaskProject> TaskProjects { get; set; }
 
         public Context(DbContextOptions<Context> options)
             : base(options)
