@@ -29,6 +29,7 @@ namespace Task
             builder.Services.AddDbContext<Context>(options => options.UseSqlServer(connectionString));
             builder.Services.AddScoped<Session>();
             builder.Services.AddScoped<NotificationService>();
+            builder.Services.AddScoped<EmailNotification>();
 
             var app = builder.Build();
 

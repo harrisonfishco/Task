@@ -9,6 +9,7 @@
 
 @using Notifications;
 @inject NotificationService Email;
+@inject EmailNotification EmailNotif;
 
 <PageTitle>Task - Settings</PageTitle>
 
@@ -43,7 +44,7 @@
         <Task.Components.Shared.TaskButton OnClick="SendMail" Text="Send Mail" Type="Shared.TaskButton.ButtonType.Default" />
         @if (test)
         {
-            <TaskButton OnClick="Save" Text="Test" Type="TaskButton.ButtonType.Default"/>
+            <TaskButton OnClick="Save" Text="Save" Type="TaskButton.ButtonType.Default"/>
         }
     </TaskSection>
 }
@@ -121,7 +122,7 @@
     //Test newly entered smtp settings (test with smtp.dreamhost.com)
     private void Test()
     {
-        test = true;
+        test = EmailNotif.IsSent(user, SmtpSettings);
     }
 
     //Save tested and working smtp settings (next to the exe the working path)

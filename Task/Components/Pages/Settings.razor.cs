@@ -4,7 +4,7 @@
     {
     }
 
-    internal class SmtpSettings
+    public class SmtpSettings
     {
         public string FromMailboxName { get; set; } = string.Empty;
         public string FromEmail {  get; set; } = string.Empty;
