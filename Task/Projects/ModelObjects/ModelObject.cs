@@ -15,7 +15,7 @@ namespace Task.ModelObjects
         public virtual string GetName()
         {
             string res = string.Empty;
-
+    
             res = this.GetType().Name;
 
             return res;

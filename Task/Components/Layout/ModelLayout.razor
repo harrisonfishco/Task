@@ -10,15 +10,19 @@
 <MainLayout>
     <h1>@GetTitle()</h1>
     <TaskSection Title="Properties">
-        @foreach(PropertyInfo prop in Properties)
+        @try
         {
-            switch(prop.PropertyType)
+            @foreach (PropertyInfo prop in Properties)
             {
-                default:
-                    <TaskTextInput DisplayName="@prop.Name" @bind-Value="PropertyValues[prop.Name]"/>
-                    break;
+                switch (prop.PropertyType)
+                {
+                    default:
+                        <TaskTextInput DisplayName="@prop.Name" @bind-Value="PropertyValues[prop.Name]" />
+                        break;
+                }
             }
-        }
+        } catch(Exception e) { TaskError.HandleError(e); }
+        
     </TaskSection>
     @Body
 </MainLayout>
