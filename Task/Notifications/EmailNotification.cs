@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Threading;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
@@ -35,56 +34,64 @@ namespace Task.Notifications
             }
         }
 
+        public int SendTestEmail(TaskUser to, SmtpSettings smtp)
+        {
+            Random random = new Random();
+            int fourDigitCode = random.Next(1000, 10000);
+
+            //TODO: using parameters (not hardcoding) and take from the saved settings
+            var email = new MimeMessage();
+            email.From.Add(new MailboxAddress(smtp.FromMailboxName, smtp.FromEmail));
+            email.To.Add(new MailboxAddress(to.FullName, smtp.FromEmail));
+            email.Subject = "Test Email";
+
+            email.Body = new TextPart("plain")
+            {
+                Text = $"Code: {fourDigitCode}"
+            };
+
+            using (var client = new SmtpClient())
+            {
+                client.Connect(smtp.SmtpServer, smtp.SmtpPort, SecureSocketOptions.StartTls);
+
+                // Note: only needed if the SMTP server requires authentication
+                client.Authenticate(smtp.SmtpUsername, smtp.SmtpPassword);
+
+                client.Send(email);
+                client.Disconnect(true);
+            }
+            return fourDigitCode;
+        }
+
         public bool IsSent(TaskUser to, SmtpSettings smtp)
         {
             bool connection = false;
             try
             {
-                /*if (smtp == null)
-                {
-                    var email = new MimeMessage();
-                    email.From.Add(new MailboxAddress(smtp.FromMailboxName, smtp.FromEmail));
-                    email.To.Add(new MailboxAddress(smtp.FromMailboxName, smtp.FromEmail));
-                    email.Subject = @"Test Subject";
-
-                    email.Body = new TextPart("plain")
-                    {
-                        Text = @"Test Body"
-                    };
-
-                    using (var client = new SmtpClient())
-                    {
-                        client.Connect(smtp.SmtpServer, smtp.SmtpPort, SecureSocketOptions.StartTls);
-
-                        // Note: only needed if the SMTP server requires authentication
-                        client.Authenticate(smtp.SmtpUsername, smtp.SmtpPassword);
-
-                        client.Send(email);
-                        client.Disconnect(true);
-                    }
-                    return true;
-                }
-                return false; */
-
-                //using (var tcpClient = new TcpClient())
-                //var connectTask = tcpClient.ConnectAsync("smtp.ethereal.email", 587);
-                TcpClient smtpTest = new TcpClient();
+                SmtpClient smtpTest = new SmtpClient();
                 smtpTest.Connect(smtp.SmtpServer, smtp.SmtpPort);
-                if (smtpTest.Connected)
+                smtpTest.Authenticate(smtp.SmtpUsername, smtp.SmtpPassword);
+                if (smtpTest.IsAuthenticated)
                 {
-                    NetworkStream ns = smtpTest.GetStream();
-                    StreamReader sr = new StreamReader(ns);
-                    if (sr.ReadLine().Contains("220"))
-                    {
-                        connection = true;
-                        System.Diagnostics.Debug.Print("220 received returning true");
-                    }
-                    smtpTest.Close();
+                    connection = true;
+                    System.Diagnostics.Debug.Print("220 received returning true");
+                    smtpTest.Disconnect(true);
                 }
             }
-            catch (Exception ex)
+            catch (SocketException ex)
             {
-                System.Diagnostics.Debug.Print($"Exception occurred: {ex.Message}");
+                if (ex.SocketErrorCode == SocketError.HostNotFound)
+                {
+                    System.Diagnostics.Debug.Print("Error: No such host is known. Please check the server address.");
+                }
+                else if (ex.SocketErrorCode == SocketError.ConnectionRefused)
+                {
+                    System.Diagnostics.Debug.Print("Error: Please check the port number.");
+                }
+            }
+            catch (AuthenticationException ex)
+            {
+                System.Diagnostics.Debug.Print("Error: Invalid email or password");
             }
             return connection;
         }

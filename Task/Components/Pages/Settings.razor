@@ -39,11 +39,11 @@
         <TaskTextInput Disabled="false" Label="Smtp Password" Type="TaskTextInput<string>.InputType.Password" @bind-Value="SmtpSettings.SmtpPassword" />
         <TaskTextInput Disabled="false" Label="Smtp Port" Type="TaskTextInput<short>.InputType.Short" @bind-Value="SmtpSettings.SmtpPort"/>
         <br />
-        <TaskButton OnClick="Test" Text="Test" Type="TaskButton.ButtonType.Default"/>
+        <TaskButton OnClick="ValidateSettings" Text="Test" Type="TaskButton.ButtonType.Default"/>
         <br />
-        <Task.Components.Shared.TaskButton OnClick="SendMail" Text="Send Mail" Type="Shared.TaskButton.ButtonType.Default" />
         @if (test)
         {
+            <Task.Components.Shared.TaskButton OnClick="SendTestMail" Text="Send Test Mail" Type="Shared.TaskButton.ButtonType.Default" />
             <TaskButton OnClick="Save" Text="Save" Type="TaskButton.ButtonType.Default"/>
         }
     </TaskSection>
@@ -53,6 +53,7 @@
     private TaskUser user = new TaskUser();
     private KeyValuePair<string, string> role;
     private bool test = false;
+    private int testEmailCode = 0;
 
     public string FullName { get; set; } = string.Empty;
     public string NewPassword { get; set; } = string.Empty;
@@ -114,13 +115,13 @@
         }
     }
 
-    public void SendMail()
+    public void SendTestMail()
     {
-        Email.Notification.Send(user, "Subject", "Message");
+        testEmailCode = EmailNotif.SendTestEmail(user, SmtpSettings);
     }
 
     //Test newly entered smtp settings (test with smtp.dreamhost.com)
-    private void Test()
+    private void ValidateSettings()
     {
         test = EmailNotif.IsSent(user, SmtpSettings);
     }
