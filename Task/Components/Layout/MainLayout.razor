@@ -5,13 +5,11 @@
 @inject NavigationManager NavigationManager;
 
 <div class="page">
-    <div class="sidebar">
+    <div class="topbar">
         <NavMenu />
     </div>
 
     <main>
-        
-
         <article class="content px-4">
             @Body
         </article>
@@ -30,11 +28,11 @@
     {
         Guid sessionId = await session.GetSessionId();
 
-        using(Context ctx = ContextFactory.CreateDbContext())
+        using (Context ctx = ContextFactory.CreateDbContext())
         {
             TaskUserSession? sess = await ctx.TaskUserSessions.Where(s => s.UserSessionGu == sessionId).FirstOrDefaultAsync();
 
-            if(sess == null || sess == default)
+            if (sess == null || sess == default)
             {
                 NavigationManager.NavigateTo("/Login");
             }

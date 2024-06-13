@@ -1,97 +1,82 @@
+/* Base styles and resets */
+
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    width: 100%; /* Ensures the body takes full width */
+}
+
 .page {
-    position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
+    margin: 0; /* Remove any margin if it was set */
+    width: 100%; /* Ensures .page takes full width */
 }
 
+/* Top bar from the previous CSS */
+.topbar {
+    background-color: #333;
+    color: white;
+    margin: 0;
+}
+
+/* Main content area */
 main {
-    flex: 1;
+    flex-grow: 1;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    margin: 20px;
+    overflow: hidden;
 }
 
-.sidebar {
-    background-image: linear-gradient(180deg, rgb(13, 47, 111) 0%, #0995a3 0%);
-
+.content {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
 }
 
-.top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
-    display: flex;
-    align-items: center;
-}
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
-        text-decoration: none;
-    }
-
-        .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-            text-decoration: underline;
-        }
-
-        .top-row ::deep a:first-child {
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-@media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
-    }
-
-        .top-row ::deep a, .top-row ::deep .btn-link {
-            margin-left: 0;
-        }
-}
-
-@media (min-width: 641px) {
-    .page {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        width: 100vw;
-        height: 100px;
-        position: sticky;
-        top: 0;
-    }
-
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-        .top-row.auth ::deep a:first-child {
-            flex: 1;
-            text-align: right;
-            width: 0;
-        }
-
-    .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
-    }
-}
-
+/* Error UI styling */
 #blazor-error-ui {
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    background-color: #fee;
+    color: #a00;
+    padding: 10px;
+    margin: 20px;
+    border: 1px solid #d00;
+    border-radius: 5px;
     display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
 }
 
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
+    #blazor-error-ui.active {
+        display: block;
     }
+
+.reload, .dismiss {
+    cursor: pointer;
+    padding: 5px 10px;
+    background-color: #fdd;
+    border: none;
+    border-radius: 3px;
+    margin: 5px;
+    text-decoration: none;
+    color: #a00;
+}
+
+.dismiss {
+    float: right;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 0 8px;
+}
+
+/* Media queries for responsive adjustments */
+@media (max-width: 768px) {
+    .content {
+        padding: 10px;
+    }
+}
