@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - TASK_CONNECTIONSTRING=Password=${TASKPASSWORD};Persist Security Info=True;User ID=task;Initial Catalog=Demo;Data Source=sql_server,1433
+        - TASK_CONNECTIONSTRING=Password=sdfgsde!@ASDAS;Persist Security Info=True;User ID=task;Initial Catalog=Demo;Data Source=sql_server,1433
         - BRANCH=${BRANCH}
     container_name: task
     links:
@@ -14,7 +14,7 @@ services:
     depends_on: 
       - sql_server
     environment:
-      - TASK_CONNECTIONSTRING=Password=${TASKPASSWORD};Persist Security Info=True;User ID=task;Initial Catalog=Demo;Data Source=sql_server,1433;TrustServerCertificate=True
+      - TASK_CONNECTIONSTRING=Password=sdfgsde!@ASDAS;Persist Security Info=True;User ID=task;Initial Catalog=Demo;Data Source=sql_server,1433;TrustServerCertificate=True
     networks:
       - task-network
   sql_server:
@@ -31,7 +31,7 @@ services:
     networks:
       - task-network
     healthcheck:
-      test: ["CMD-SHELL", "echo 'SELECT 1' | /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U task -P ${TASKPASSWORD}"]
+      test: ["CMD-SHELL", "echo 'SELECT 1' | /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U task -P sdfgsde!@ASDAS"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -41,7 +41,7 @@ services:
       context: .
       dockerfile: MigrationDockerfile
       args:
-        - TASK_CONNECTIONSTRING=Password=${TASKPASSWORD};Persist Security Info=True;User ID=task;Initial Catalog=Demo;Data Source=sql_server,1433;TrustServerCertificate=True
+        - TASK_CONNECTIONSTRING=Password=sdfgsde!@ASDAS;Persist Security Info=True;User ID=task;Initial Catalog=Demo;Data Source=sql_server,1433;TrustServerCertificate=True
         - BRANCH=${BRANCH}
     networks:
       - task-network
