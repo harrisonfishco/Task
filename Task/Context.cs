@@ -136,6 +136,11 @@ namespace Task
         public string Role { get; set; }
 
         public ICollection<TaskTask>? OpenedTasks { get; set; }
+
+        public override string ToString()
+        {
+            return FullName;
+        }
     }
 
     public class TaskUserSession : ModelObject

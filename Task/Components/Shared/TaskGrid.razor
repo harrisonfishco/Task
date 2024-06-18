@@ -8,15 +8,18 @@
 
 @if (TypeCheck.NotEmpty(PrimaryObject))
 {
-    <table>
+    <table class="@(NoMargin ? "task-grid-no-margin" : "")">
         <thead>
-            <tr class="task-grid-action-area">
-                <th colspan="@(Properties.Count + 1)">
-                    <TaskButton Text="Add" Type="TaskButton.ButtonType.Default" OnClick="AddRow" Compact="true"/>
-                    <TaskButton Text="Save" Type="TaskButton.ButtonType.Positive" OnClick="Save" Compact="true"/>
-                    <TaskButton Text="Undo" Type="TaskButton.ButtonType.Warning" OnClick="Undo" Compact="true"/>
-                </th>
-            </tr>
+            @if(!HideCRUD && !IsSelect)
+            {
+                <tr class="task-grid-action-area">
+                    <th colspan="@(Properties.Count + 1)">
+                        <TaskButton Text="Add" Type="TaskButton.ButtonType.Default" OnClick="AddRow" Compact="true" />
+                        <TaskButton Text="Save" Type="TaskButton.ButtonType.Positive" OnClick="Save" Compact="true" />
+                        <TaskButton Text="Undo" Type="TaskButton.ButtonType.Warning" OnClick="Undo" Compact="true" />
+                    </th>
+                </tr>
+            }
             <tr>
                 <th>
                     <input type="checkbox" @onchange="OnCheckAllChange"/>
@@ -53,6 +56,15 @@
 
     [Parameter]
     public PrimaryType? DefaultObject { get; set; } = null;
+
+    [Parameter]
+    public bool NoMargin { get; set; } = false;
+
+    [Parameter]
+    public bool HideCRUD { get; set; } = false;
+
+    [Parameter]
+    public bool IsSelect { get; set; } = false;
 
     private Type ObjectType { get; set; } = typeof(object);
 

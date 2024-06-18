@@ -39,15 +39,34 @@ namespace Task.ModelObjects
         /// </summary>
         /// <param name="excludePkAndFk">Excludes all Guid types</param>
         /// <returns></returns>
-        public List<PropertyInfo> GetProperties(bool excludePkAndFk = false)
+        public List<PropertyInfo> GetProperties(PropertiesType type = PropertiesType.MemberSpecific)
         {
             List<PropertyInfo> res = new List<PropertyInfo>();
 
             res = this.GetType().GetProperties().ToList();
 
-            if(excludePkAndFk)
+            //Remove all navigation properties
+            res.RemoveAll(p => !p.PropertyType.IsPrimitive && p.PropertyType != typeof(Guid) && p.PropertyType != typeof(string));
+
+            switch (type)
             {
-                res = res.Where(p => p.GetType() != typeof(Guid)).ToList();
+                default:
+                case PropertiesType.All:
+                    break;
+                case PropertiesType.MemberSpecific:
+                    res.RemoveAll(p => typeof(ModelObject)
+                        .GetProperties()
+                        .Select(pr => pr.Name)
+                        .Contains(p.Name));
+                    break;
+                case PropertiesType.PrimaryAndForiegnKeys:
+                    res = res.Where(p => p.PropertyType == typeof(Guid)).ToList();
+                    break;
+                case PropertiesType.Default:
+                    res = typeof(ModelObject)
+                        .GetProperties()
+                        .ToList();
+                    break;
             }
 
             return res;
@@ -59,7 +78,7 @@ namespace Task.ModelObjects
         /// <typeparam name="T"></typeparam>
         /// <param name="excludePkAndFk">Excludes all Guid types</param>
         /// <returns></returns>
-        public static List<PropertyInfo> GetProperties<T>(bool excludePkAndFk = false) where T : ModelObject
+        public static List<PropertyInfo> GetProperties<T>(PropertiesType type = PropertiesType.MemberSpecific) where T : ModelObject
         {
             List<PropertyInfo> res = new List<PropertyInfo>();
 
@@ -67,7 +86,7 @@ namespace Task.ModelObjects
 
             if(obj != null)
             {
-                res = obj.GetProperties(excludePkAndFk);
+                res = obj.GetProperties(type);
             }
 
             return res;
@@ -118,5 +137,13 @@ namespace Task.ModelObjects
 
             return res;
         }
+    }
+
+    public enum PropertiesType
+    {
+        All,
+        Default, // Timestamps
+        PrimaryAndForiegnKeys, // Only Guid Types
+        MemberSpecific // Only defined in class (excludes Default)
     }
 }

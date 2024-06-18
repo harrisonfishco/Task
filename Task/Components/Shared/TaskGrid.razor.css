@@ -6,6 +6,12 @@
     background-color: rgba(0, 0, 0, 0.05);
 }
 
+.task-grid-no-margin {
+    margin: 0;
+    width: 100%;
+    border: none;
+}
+
 thead, tbody {
     width: 100%;
 }

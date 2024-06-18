@@ -4,11 +4,32 @@ namespace Task.Components.Layout
 {
     public partial class ModelLayout<T> where T : ModelObject
     {
-        protected Mode CurrentMode { get; set; }
+        protected Mode CurrentMode { get; set; } = Mode.Find;
 
-        public void SetNumber(string number)
+        public void SetIdentity(string? identity)
         {
-            this.Number = number;
+            if(TypeCheck.NotEmpty(identity))
+            {
+                if (Guid.TryParse(identity, out Guid id))
+                {
+                    this.Identity = id;
+                }
+                CurrentMode = Mode.Update;
+            }
+        }
+
+        public void SetIdentity(Guid? identity)
+        {
+            if(TypeCheck.NotEmpty(identity))
+            {
+                this.Identity = identity;
+                CurrentMode = Mode.Update;
+            }
+        }
+
+        public Guid? GetIdentity()
+        {
+            return this.Identity;
         }
 
         /// <summary>

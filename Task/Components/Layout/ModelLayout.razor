@@ -1,47 +1,153 @@
 ﻿@using Microsoft.EntityFrameworkCore;
+@using Microsoft.EntityFrameworkCore.Metadata;
+@using Microsoft.EntityFrameworkCore.ChangeTracking;
 @using Task.ModelObjects;
 @using Task.Components.Shared;
+@using System.Linq.Expressions;
 @using System.Reflection;
 
 @inherits MainLayout
 
+@inject IDbContextFactory<Context> ContextFactory;
+
 @typeparam T where T : ModelObject;
 
-<MainLayout>
-    <h1>@GetTitle()</h1>
-    <TaskSection Title="Properties">
-        @try
-        {
-            @foreach (PropertyInfo prop in Properties)
-            {
-                switch (prop.PropertyType)
-                {
-                    default:
-                        <TaskTextInput DisplayName="@prop.Name" @bind-Value="PropertyValues[prop.Name]" />
-                        break;
-                }
+<CascadingValue Value="this">
+    <MainLayout>
+        <style>
+            .model-layout-input {
+                padding: 6px;
+                border-radius: 4px;
+                border: 1px solid rgba(0, 0, 0, 0.4);
             }
-        } catch(Exception e) { TaskError.HandleError(e); }
-        
-    </TaskSection>
-    @Body
-</MainLayout>
+
+            .input-holder {
+                margin: 8px;
+                display: inline-block;
+            }
+        </style>
+        <h1>@GetTitle()</h1>
+        <TaskSection Title="Properties">
+            <div>
+                <TaskButton Type="TaskButton.ButtonType.Warning" Text="Find" OnClick="Find"/>
+            </div>
+            <div>
+                @try
+                {
+                    @foreach (PropertyInfo prop in Properties)
+                    {
+                        switch (prop.PropertyType)
+                        {
+                            default:
+                                <div class="input-holder">
+                                    <label for="@prop.Name">@prop.Name</label>
+                                    <input id="@prop.Name" class="model-layout-input" @onchange="((ChangeEventArgs e) => OnChange(e, prop.Name))" />
+                                </div>
+                                break;
+                        }
+                    }
+                }
+                catch (Exception e) { TaskError.HandleError(e); }
+            </div>
+        </TaskSection>
+        @if (CurrentMode == Mode.Find)
+        {
+            <TaskSection Title="Results" NoPadding="true">
+                <TaskGrid PrimaryObject="searchObjects" HideCRUD="true" NoMargin="true"/>
+            </TaskSection>
+        }
+        @Body
+    </MainLayout>
+</CascadingValue>
 
 @code {
+    public Guid? Identity { get; set; } = null;
+
     protected Type Type { get; set; } = typeof(T);
 
-    protected List<PropertyInfo> Properties { get; set; } = ModelObject.GetProperties<T>();
+
+    protected List<PropertyInfo> Properties { get; set; } = ModelObject.GetProperties<T>()
+        .Where(p => typeof(ModelObject)
+            .GetProperties()
+            .Select(pr => pr.Name)
+            .Contains(p.Name) == false)
+        .ToList();
 
     private Dictionary<string, string> PropertyValues { get; } = new Dictionary<string, string>();
-
-    [Parameter]
-    public string? Number { get; set; }
+    private List<T> searchObjects = new List<T>()
+    {
+        Activator.CreateInstance(typeof(T)) as T
+    };
 
     protected override void OnParametersSet()
     {
-        foreach(PropertyInfo prop in Properties)
+        if(PropertyValues.Count == 0)
         {
-            PropertyValues.Add(prop.Name, string.Empty);
+            foreach (PropertyInfo prop in Properties)
+            {
+                PropertyValues.Add(prop.Name, string.Empty);
+            }
+        }
+    }
+
+    private async Task Find()
+    {
+        using(Context context = ContextFactory.CreateDbContext())
+        {
+            IEnumerable<string> navigationProperties = context.Model.FindEntityType(typeof(T))!
+                .GetNavigations()
+                .Select(n => n.Name);
+
+            IQueryable<T> query = context.Set<T>();
+
+            foreach (string navigationProperty in navigationProperties)
+            {
+                query = query.Include(navigationProperty); 
+            }
+
+            foreach(KeyValuePair<string, string> filter in PropertyValues.Where(p => TypeCheck.NotEmpty(p.Value)))
+            {
+                ParameterExpression parameter = Expression.Parameter(typeof(T), "t");
+                MemberExpression property = Expression.Property(parameter, filter.Key);
+                ConstantExpression value = Expression.Constant(filter.Value);
+
+                MethodInfo? likeMethod = typeof(DbFunctionsExtensions)
+                    .GetMethod(nameof(DbFunctionsExtensions.Like), new[] { typeof(DbFunctions), typeof(string), typeof(string) })!;
+
+                MethodCallExpression likeCall = Expression.Call(null, likeMethod, Expression.Constant(EF.Functions), property, value);
+
+                Expression<Func<T, bool>> lambda = Expression.Lambda<Func<T, bool>>(likeCall, parameter);
+
+                query = query.Where(lambda);
+            }
+
+            searchObjects = await query.ToListAsync();
+        }
+    }
+
+    private void OnChange(ChangeEventArgs e, string key)
+    {
+        if(e.Value is string value)
+        {
+            PropertyValues[key] = value;
+        }
+    }
+
+    private void SetUpdateMode()
+    {
+        using(Context context = ContextFactory.CreateDbContext())
+        {
+            T? obj = Activator.CreateInstance(Type) as T;
+
+            if(TypeCheck.NotEmpty(obj))
+            {
+                EntityEntry entry = context.Entry(obj);
+
+                MethodInfo method = context.GetType().GetMethod("Set").MakeGenericMethod(Type);
+                object? dbSet = method.Invoke(context, null);
+
+
+            }
         }
     }
 }
