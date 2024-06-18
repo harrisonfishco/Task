@@ -1,0 +1,55 @@
+services:
+  task:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - TASK_CONNECTIONSTRING=Password=sdfgsde!@ASDAS;Persist Security Info=True;User ID=task;Initial Catalog=Demo;Data Source=sql_server,1433
+        - BRANCH=${BRANCH}
+    container_name: task
+    links:
+      - "sql_server"
+    ports:
+      - ${PORT}:8080
+    depends_on: 
+      - sql_server
+    environment:
+      - TASK_CONNECTIONSTRING=Password=sdfgsde!@ASDAS;Persist Security Info=True;User ID=task;Initial Catalog=Demo;Data Source=sql_server,1433;TrustServerCertificate=True
+    networks:
+      - task-network
+  sql_server:
+    container_name: sql_server
+    hostname: sql_server
+    build:
+      context: .
+      dockerfile: DatabaseDockerfile
+    ports:
+      - 1433:1433
+    environment:
+      SA_PASSWORD: "tasktasktask1!"
+      ACCEPT_EULA: "Y"
+    networks:
+      - task-network
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'SELECT 1' | /opt/mssql-tools/bin/sqlcmd -S localhost,1433 -U task -P sdfgsde!@ASDAS"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  task_migration:
+    container_name: task_migration
+    build:
+      context: .
+      dockerfile: MigrationDockerfile
+      args:
+        - TASK_CONNECTIONSTRING=Password=sdfgsde!@ASDAS;Persist Security Info=True;User ID=task;Initial Catalog=Demo;Data Source=sql_server,1433;TrustServerCertificate=True
+        - BRANCH=${BRANCH}
+    networks:
+      - task-network
+    depends_on:
+      sql_server:
+        condition: service_healthy
+
+networks:
+  task-network:
+    driver: bridge
+    
