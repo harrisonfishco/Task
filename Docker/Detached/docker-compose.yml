@@ -3,6 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - TASK_CONNECTIONSTRING=${TASK_CONNECTIONSTRING}
+        - BRANCH=${BRANCH}
     container_name: task-${BRANCH}
     ports:
       - ${port}:8080
