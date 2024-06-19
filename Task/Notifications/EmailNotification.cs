@@ -1,9 +1,10 @@
-﻿using System;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using Task.Components.Pages;
+using System.Text.Json;
+using Task;
 
 namespace Task.Notifications
 {
@@ -26,7 +27,6 @@ namespace Task.Notifications
             {
                 client.Connect("smtp.ethereal.email", 587, SecureSocketOptions.StartTls);
 
-                // Note: only needed if the SMTP server requires authentication
                 client.Authenticate("vanessa.hegmann@ethereal.email", "HT3Z5UhKDcUvw9Y5tf");
 
                 client.Send(email);
@@ -39,12 +39,12 @@ namespace Task.Notifications
             Random random = new Random();
             int fourDigitCode = random.Next(1000, 10000);
 
-            //TODO: using parameters (not hardcoding) and take from the saved settings
             var email = new MimeMessage();
             email.From.Add(new MailboxAddress(smtp.FromMailboxName, smtp.FromEmail));
             email.To.Add(new MailboxAddress(to.FullName, smtp.FromEmail));
             email.Subject = "Test Email";
 
+            //TODO: Set up four digit code
             email.Body = new TextPart("plain")
             {
                 Text = $"Code: {fourDigitCode}"
@@ -54,7 +54,6 @@ namespace Task.Notifications
             {
                 client.Connect(smtp.SmtpServer, smtp.SmtpPort, SecureSocketOptions.StartTls);
 
-                // Note: only needed if the SMTP server requires authentication
                 client.Authenticate(smtp.SmtpUsername, smtp.SmtpPassword);
 
                 client.Send(email);
@@ -74,10 +73,11 @@ namespace Task.Notifications
                 if (smtpTest.IsAuthenticated)
                 {
                     connection = true;
-                    System.Diagnostics.Debug.Print("220 received returning true");
+                    System.Diagnostics.Debug.Print("Connected!");
                     smtpTest.Disconnect(true);
                 }
             }
+            //TODO: Set up error messages for user
             catch (SocketException ex)
             {
                 if (ex.SocketErrorCode == SocketError.HostNotFound)
@@ -94,6 +94,36 @@ namespace Task.Notifications
                 System.Diagnostics.Debug.Print("Error: Invalid email or password");
             }
             return connection;
+        }
+
+        //TODO: Create the json with code
+
+        public async Task<SmtpSettings> ReadSmtpSettings()
+        {
+            //if(TaskCache.ContainsKey())
+            string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"bin\Debug\net8.0", "smtpSettings.json");
+
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"The file {filePath} was not found.");
+            }
+
+            var json = await File.ReadAllTextAsync(filePath);
+            return JsonSerializer.Deserialize<SmtpSettings>(json);
+        }
+
+        public async Task<bool> WriteSmtpSettings(SmtpSettings settings)
+        {
+            string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"bin\Debug\net8.0", "smtpSettings.json");
+
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"The file {filePath} was not found.");
+            }
+
+            var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+            await File.WriteAllTextAsync(filePath, json);
+            return true;
         }
     }
 }

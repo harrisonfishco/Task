@@ -93,6 +93,21 @@
 
                         role = new KeyValuePair<string, string>(v.Code, v.Value);
                         UserRole = v.Code;
+
+                        //SMTP Settings
+                        try
+                        {
+                            SmtpSettings = await EmailNotif.ReadSmtpSettings();
+                        }
+                        catch (FileNotFoundException ex)
+                        {
+                            System.Diagnostics.Debug.Print("Configuration file not found.");
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.Print($"An error occurred: {ex.Message}");
+                        }
+
                         StateHasChanged();
                     }
                 }
@@ -115,23 +130,22 @@
         }
     }
 
-    public void SendTestMail()
+    private void SendTestMail()
     {
         testEmailCode = EmailNotif.SendTestEmail(user, SmtpSettings);
     }
 
-    //Test newly entered smtp settings (test with smtp.dreamhost.com)
     private void ValidateSettings()
     {
         test = EmailNotif.IsSent(user, SmtpSettings);
     }
 
-    //Save tested and working smtp settings (next to the exe the working path)
-    private void Save()
+    //Save tested and working smtp settings
+    private async Task Save()
     {
         if(test)
         {
-           
+            await EmailNotif.WriteSmtpSettings(SmtpSettings);
         }
     }
 }
