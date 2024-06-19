@@ -21,8 +21,12 @@
                 </tr>
             }
             <tr>
-                <th>
-                    <input type="checkbox" @onchange="OnCheckAllChange"/>
+
+                <th class="first-col">
+                    @if (!IsSelect)
+                    {
+                        <input type="checkbox" @onchange="OnCheckAllChange" />
+                    }
                 </th>
                 @foreach (PropertyInfo prop in Properties)
                 {
@@ -34,13 +38,27 @@
             @foreach (KeyValuePair<Guid, TaskGridRow<PrimaryType>> row in dict)
             {
                 <tr id="@row.Key" class="@(row.Value.Delete ? "task-grid-row-delete" : "")">
-                    <td>
-                        <input type="checkbox" @bind="row.Value.Delete"/>
+                    <td class="first-col">
+                        @if(IsSelect)
+                        {
+                            <TaskButton Compact="true" Text="Select" Type="TaskButton.ButtonType.Positive" OnClick="() => OnSelect.InvokeAsync(row.Value.Row)"/>   
+                        }
+                        else
+                        {
+                            <input type="checkbox" @bind="row.Value.Delete" />
+                        }
                     </td>
                     @foreach (PropertyInfo prop in Properties)
                     {
                         <td>
-                            <input @onchange="e => OnChange(e, prop, row.Key)" value="@prop.GetValue(row.Value.Row)" disabled="@(row.Value.Delete)"/>
+                            @if(IsSelect)
+                            {
+                                @prop.GetValue(row.Value.Row)
+                            }
+                            else
+                            {
+                                <input @onchange="e => OnChange(e, prop, row.Key)" value="@prop.GetValue(row.Value.Row)" disabled="@(row.Value.Delete)" />
+                            }
                         </td>
                     }
                 </tr>
@@ -65,6 +83,9 @@
 
     [Parameter]
     public bool IsSelect { get; set; } = false;
+
+    [Parameter]
+    public EventCallback OnSelect { get; set; }
 
     private Type ObjectType { get; set; } = typeof(object);
 

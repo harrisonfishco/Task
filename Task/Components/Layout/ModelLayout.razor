@@ -29,7 +29,23 @@
         <h1>@GetTitle()</h1>
         <TaskSection Title="Properties">
             <div>
-                <TaskButton Type="TaskButton.ButtonType.Warning" Text="Find" OnClick="Find"/>
+                @if(CurrentMode == Mode.Find)
+                {
+                    <TaskButton Type="TaskButton.ButtonType.Warning" Text="Find" OnClick="Find" />
+                    <TaskButton Type="TaskButton.ButtonType.Positive" Text="Add" OnClick="SetAddMode"/>
+                }
+                else if(CurrentMode == Mode.Update)
+                {
+                    <TaskButton Type="TaskButton.ButtonType.Info" Text="Search" OnClick="Search"/>
+                    <TaskButton Type="TaskButton.ButtonType.Positive" Text="Save" />
+                    <TaskButton Type="TaskButton.ButtonType.Warning" Text="Undo" OnClick="Undo" />
+                    <TaskButton Type="TaskButton.ButtonType.Negative" Text="Delete" />
+                }
+                else if(CurrentMode == Mode.Insert)
+                {
+                    <TaskButton Type="TaskButton.ButtonType.Neutral" Text="Cancel" OnClick="Search"/>
+                    <TaskButton Type="TaskButton.ButtonType.Positive" Text="Save" />
+                }
             </div>
             <div>
                 @try
@@ -41,7 +57,7 @@
                             default:
                                 <div class="input-holder">
                                     <label for="@prop.Name">@prop.Name</label>
-                                    <input id="@prop.Name" class="model-layout-input" @onchange="((ChangeEventArgs e) => OnChange(e, prop.Name))" />
+                                    <input id="@prop.Name" value="@PropertyValues[prop.Name]" class="model-layout-input" @onchange="((ChangeEventArgs e) => OnChange(e, prop.Name))" />
                                 </div>
                                 break;
                         }
@@ -50,10 +66,10 @@
                 catch (Exception e) { TaskError.HandleError(e); }
             </div>
         </TaskSection>
-        @if (CurrentMode == Mode.Find)
+        @if (CurrentMode == Mode.Find && searchObjects != null)
         {
             <TaskSection Title="Results" NoPadding="true">
-                <TaskGrid PrimaryObject="searchObjects" HideCRUD="true" NoMargin="true"/>
+                <TaskGrid PrimaryObject="searchObjects" NoMargin="true" IsSelect="true" OnSelect="OnSelect"/>
             </TaskSection>
         }
         @Body
@@ -65,6 +81,8 @@
 
     protected Type Type { get; set; } = typeof(T);
 
+    private T? current = null;
+
 
     protected List<PropertyInfo> Properties { get; set; } = ModelObject.GetProperties<T>()
         .Where(p => typeof(ModelObject)
@@ -74,10 +92,7 @@
         .ToList();
 
     private Dictionary<string, string> PropertyValues { get; } = new Dictionary<string, string>();
-    private List<T> searchObjects = new List<T>()
-    {
-        Activator.CreateInstance(typeof(T)) as T
-    };
+    private List<T>? searchObjects;
 
     protected override void OnParametersSet()
     {
@@ -88,6 +103,33 @@
                 PropertyValues.Add(prop.Name, string.Empty);
             }
         }
+    }
+
+    private void Search()
+    {
+        current = null;
+        CurrentMode = Mode.Find;
+    }
+
+    private void Undo()
+    {
+        List<PropertyInfo> props = current!.GetProperties();
+        props.ForEach(p =>
+        {
+            if (PropertyValues.ContainsKey(p.Name) && p.PropertyType == typeof(string))
+            {
+                string? val = (string?)p.GetValue(current);
+                if (TypeCheck.NotEmpty(val))
+                {
+                    PropertyValues[p.Name] = val;
+                }
+                else
+                {
+                    PropertyValues[p.Name] = string.Empty;
+                }
+
+            }
+        });
     }
 
     private async Task Find()
@@ -125,6 +167,32 @@
         }
     }
 
+    private void OnSelect(object? obj)
+    {
+        if(TypeCheck.NotEmpty(obj) && obj is T instance)
+        {
+            current = instance;
+            List<PropertyInfo> props = instance.GetProperties();
+            props.ForEach(p =>
+            {
+                if (PropertyValues.ContainsKey(p.Name) && p.PropertyType == typeof(string))
+                {
+                    string? val = (string?)p.GetValue(instance);
+                    if (TypeCheck.NotEmpty(val))
+                    {
+                        PropertyValues[p.Name] = val;
+                    }
+                    else
+                    {
+                        PropertyValues[p.Name] = string.Empty;
+                    }
+
+                }
+            });
+            SetUpdateMode();
+        }
+    }
+
     private void OnChange(ChangeEventArgs e, string key)
     {
         if(e.Value is string value)
@@ -133,8 +201,15 @@
         }
     }
 
+    private void SetAddMode()
+    {
+        current = null;
+        CurrentMode = Mode.Insert;
+    }
+
     private void SetUpdateMode()
     {
+        CurrentMode = Mode.Update;
         using(Context context = ContextFactory.CreateDbContext())
         {
             T? obj = Activator.CreateInstance(Type) as T;
@@ -143,8 +218,8 @@
             {
                 EntityEntry entry = context.Entry(obj);
 
-                MethodInfo method = context.GetType().GetMethod("Set").MakeGenericMethod(Type);
-                object? dbSet = method.Invoke(context, null);
+                //MethodInfo method = context.GetType().GetMethod("Set").MakeGenericMethod(Type);
+                //object? dbSet = method.Invoke(context, null);
 
 
             }
