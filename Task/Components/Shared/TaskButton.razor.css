@@ -86,3 +86,8 @@
     padding: 0px 4px;
     font-size: 14px;
 }
+
+button:disabled, button:disabled:hover {
+    background-color: rgba(166, 166, 166, 1);
+    border-color: rgba(107, 107, 107, 1);
+}

@@ -198,8 +198,8 @@
 
             PropertyInfo[] properties = ObjectType.GetProperties();
 
-            //Make sure we don't include Guid properties
-            Properties = properties.Where(p => p.PropertyType != typeof(Guid)).ToList();
+            //Make sure we don't include Guid properties or collections
+            Properties = properties.Where(p => p.PropertyType != typeof(Guid) && p.PropertyType.GenericTypeArguments.Length == 0).ToList();
 
             //Remove all default properties (timestamps)
             Type mOType = typeof(ModelObject);

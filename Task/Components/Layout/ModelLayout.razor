@@ -37,14 +37,14 @@
                 else if(CurrentMode == Mode.Update)
                 {
                     <TaskButton Type="TaskButton.ButtonType.Info" Text="Search" OnClick="Search"/>
-                    <TaskButton Type="TaskButton.ButtonType.Positive" Text="Save" />
-                    <TaskButton Type="TaskButton.ButtonType.Warning" Text="Undo" OnClick="Undo" />
+                    <TaskButton Type="TaskButton.ButtonType.Positive" Text="Save" Disabled="!Changed"/>
+                    <TaskButton Type="TaskButton.ButtonType.Warning" Text="Undo" OnClick="Undo" Disabled="!Changed" />
                     <TaskButton Type="TaskButton.ButtonType.Negative" Text="Delete" />
                 }
                 else if(CurrentMode == Mode.Insert)
                 {
                     <TaskButton Type="TaskButton.ButtonType.Neutral" Text="Cancel" OnClick="Search"/>
-                    <TaskButton Type="TaskButton.ButtonType.Positive" Text="Save" />
+                    <TaskButton Type="TaskButton.ButtonType.Positive" Text="Save" Disabled="!CanAdd" />
                 }
             </div>
             <div>
@@ -81,18 +81,67 @@
 
     protected Type Type { get; set; } = typeof(T);
 
-    private T? current = null;
-
-
     protected List<PropertyInfo> Properties { get; set; } = ModelObject.GetProperties<T>()
         .Where(p => typeof(ModelObject)
             .GetProperties()
             .Select(pr => pr.Name)
             .Contains(p.Name) == false)
+        .Where(p => p.PropertyType != typeof(Guid))
         .ToList();
+
+    public bool Changed
+    {
+        get
+        {
+            bool res = false;
+            try
+            {
+                if(CurrentMode == Mode.Update)
+                {
+                    foreach(PropertyInfo prop in Properties)
+                    {
+                        if(prop.PropertyType == typeof(string) && (string)prop.GetValue(current)! != PropertyValues[prop.Name])
+                        {
+                            res = true;
+                            break;
+                        }
+                    }
+                }
+            } catch(Exception ex) { TaskError.HandleError(ex); }
+            return res;
+        }
+    }
+
+    public bool CanAdd
+    {
+        get
+        {
+            bool res = true;
+            try
+            {
+                if(CurrentMode == Mode.Insert)
+                {
+                    foreach(PropertyInfo prop in Properties)
+                    {
+                        if(Nullable.GetUnderlyingType(prop.PropertyType) == null && PropertyValues[prop.Name] == string.Empty)
+                        {
+                            res = false;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    res = false;
+                }
+            } catch(Exception ex) { TaskError.HandleError(ex); }
+            return res;
+        }
+    }
 
     private Dictionary<string, string> PropertyValues { get; } = new Dictionary<string, string>();
     private List<T>? searchObjects;
+    private T? current = null;
 
     protected override void OnParametersSet()
     {
@@ -151,7 +200,7 @@
             {
                 ParameterExpression parameter = Expression.Parameter(typeof(T), "t");
                 MemberExpression property = Expression.Property(parameter, filter.Key);
-                ConstantExpression value = Expression.Constant(filter.Value);
+                ConstantExpression value = Expression.Constant($"%{filter.Value}%");
 
                 MethodInfo? likeMethod = typeof(DbFunctionsExtensions)
                     .GetMethod(nameof(DbFunctionsExtensions.Like), new[] { typeof(DbFunctions), typeof(string), typeof(string) })!;
@@ -165,6 +214,11 @@
 
             searchObjects = await query.ToListAsync();
         }
+    }
+
+    private async Task Add()
+    {
+        
     }
 
     private void OnSelect(object? obj)
