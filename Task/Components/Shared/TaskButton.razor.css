@@ -2,6 +2,7 @@
     border-radius: 6px; 
     border: 2px solid;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    transition: all 0.1s;
 }
 
 /* Default button style */
@@ -42,26 +43,31 @@
 
 /* Warning button style */
 .task-btn-warning {
-    background-color: rgba(255, 178, 50, 1);
+    background-color: #fa9c00;
     color: white;
-    border-color: rgba(255, 178, 50, 1);
+    border-color: #b06e00;
 }
 
 .task-btn-warning:hover {
-    background-color: rgba(255, 159, 0, 1);
-    border-color: rgba(255, 159, 0, 1);
+    background-color: #cd8000;
+    border-color: #805000;
 }
 
 /* Positive button style */
 .task-btn-positive {
-    background-color: rgba(30, 237, 0, 1);
+    background-color: #17b400;
     color: white;
-    border-color: rgba(30, 237, 0, 1);
+    border-color: #0f7800;
 }
 
 .task-btn-positive:hover {
-    background-color: rgba(24, 189, 0, 1);
-    border-color: rgba(24, 189, 0, 1);
+    background-color: #107f00;
+    border-color: #063400;
+}
+
+.task-btn-positive:focus,
+.task-btn-positive:active {
+    border-color: #0f7800
 }
 
 /* Negative button style */
@@ -74,4 +80,9 @@
 .task-btn-negative:hover {
     background-color: rgba(178, 0, 0, 1);
     border-color: rgba(178, 0, 0, 1);
+}
+
+.task-btn-compact {
+    padding: 0px 4px;
+    font-size: 14px;
 }

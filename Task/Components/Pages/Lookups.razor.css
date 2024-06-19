@@ -1,0 +1,9 @@
+﻿.lookup-container {
+    display: flex;
+}
+
+.lookup-body
+{
+    display: inline-block;
+    width: calc(100% - 260px);
+}

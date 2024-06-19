@@ -2,8 +2,11 @@
 @inherits InputBase<T>
 
 <div>
-    <label for="@instance">@Label</label>
-    <input id="@instance" type="@GetInputType()" @bind="@CurrentValue" disabled="@Disabled" maxlength="@Maxlength"/>
+    @if(Label != string.Empty)
+    {
+        <label for="@instance">@Label</label>
+    }
+    <input id="@instance" type="@GetInputType()" @bind="@CurrentValue" placeholder="@Placeholder" class="@Class" disabled="@Disabled"/>
 </div>
 
 @code {
@@ -16,8 +19,14 @@
     [Parameter]
     public InputType Type { get; set; } = InputType.Default;
 
+
+    [Parameter]
+    public string Placeholder { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Class { get; set; } = string.Empty;
+
     //TODO: make a task for properly setting up maxlength constraint
-    private short Maxlength { get; set; } = 999;
 
     private Guid instance = Guid.NewGuid();
 
@@ -35,19 +44,15 @@
                 break;
             case InputType.Integer:
                 res = "number";
-                Maxlength = 11;
                 break;
             case InputType.Float:
                 res = "number";
-                Maxlength = 15;
                 break;
             case InputType.Short:
                 res = "number";
-                Maxlength = 6;
                 break;
             case InputType.Double:
                 res = "number";
-                Maxlength = 24;
                 break;
         }
         return res;

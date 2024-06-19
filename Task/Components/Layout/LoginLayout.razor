@@ -1,19 +1,20 @@
 ﻿@inherits LayoutComponentBase
 @using Task.Login
 @using Microsoft.EntityFrameworkCore;
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+@using Task.Components.Shared;
 @inject IDbContextFactory<Context> ContextFactory;
 @inject Session session;
 @inject NavigationManager NavigationManager;
 
 <div class="login-container">
-    <h1 class="login-title">Login</h1>
-    <p>@Model.test</p>
-    <p>@Model.Status</p>
-    <div class="login-form">
-        <InputText @bind-Value="Model.Username" type="text" id="username" placeholder="Username" class="login-input" />
-        <InputText @bind-Value="Model.Password" type="password" id="password" placeholder="Password" class="login-input" />
-        <button id="submit" value="Login" class="login-button" @onclick="OnLogin">Login</button>
+    <div class="login-box">
+        <h1 class="login-title">Login</h1>
+        <div class="login-form">
+            <input @bind="Model.Username" id="username" placeholder="Username" class="login-input" />
+            <input @bind="Model.Password" type="password" placeholder="Password" class="login-input" />
+            <button id="submit" value="Login" class="login-button" @onclick="OnLogin">Login</button>
+        </div>
     </div>
 </div>
 
@@ -30,7 +31,7 @@
         {
             TaskUserSession? sess = await ctx.TaskUserSessions.Where(s => s.UserSessionGu == sessionId).FirstOrDefaultAsync();
 
-            if(sess != null)
+            if(TypeCheck.NotEmpty(sess))
             {
                 NavigationManager.NavigateTo("/");
             }
@@ -44,8 +45,6 @@
 
     private async void OnLogin()
     {
-        Model!.test = $"{Model.Username} {Model.Password}";
-
         using(Context ctx = ContextFactory.CreateDbContext())
         {
             bool canLogin = await ctx.VerifyUser(Model.Username, Model.Password);
@@ -53,6 +52,8 @@
             if(canLogin)
             {
                 TaskUser user = await ctx.TaskUsers.FirstAsync(u => u.Username == Model.Username);
+
+                TaskCache.SetKey("TASKUSER_ROLE", user.Role);
 
                 TaskUserSession tus = new TaskUserSession();
                 tus.TaskUser = user;
@@ -76,12 +77,10 @@
     {
         public string? Username { get; set; }
         public string? Password { get; set; }
-        public string test { get; set; }
         public string Status { get; set; }
 
         public LoginParams()
         {
-            test = string.Empty;
             Status = string.Empty;
         }
     }
