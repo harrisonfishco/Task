@@ -43,7 +43,6 @@
         <br />
         @if (test)
         {
-            <Task.Components.Shared.TaskButton OnClick="SendTestMail" Text="Send Test Mail" Type="Shared.TaskButton.ButtonType.Default" />
             <TaskButton OnClick="Save" Text="Save" Type="TaskButton.ButtonType.Default"/>
         }
     </TaskSection>
@@ -128,11 +127,6 @@
             }
             NewPassword = ConfirmPassword = string.Empty;
         }
-    }
-
-    private void SendTestMail()
-    {
-        testEmailCode = EmailNotif.SendTestEmail(user, SmtpSettings);
     }
 
     private void ValidateSettings()

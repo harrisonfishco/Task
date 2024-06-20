@@ -10,11 +10,32 @@ namespace Task.Notifications
 {
     public class EmailNotification : INotification
     {
-        public void Send(TaskUser to, string subject, string message, NotificationContentType type = NotificationContentType.Info)
+        public readonly string TASK_SMTP_SETTINGS_KEY = "TASK_SMTP_SETTINGS_KEY";
+        public async void Send(TaskUser to, string subject, string message, NotificationContentType type = NotificationContentType.Info)
         {
-            //TODO: using parameters (not hardcoding) and take from the saved settings
+            SmtpSettings smtpSettings = new SmtpSettings();
+            string json;
+            if (TaskCache.ContainsKey(TASK_SMTP_SETTINGS_KEY))
+            {
+                json = TaskCache.GetKey(TASK_SMTP_SETTINGS_KEY)!;
+                smtpSettings = JsonSerializer.Deserialize<SmtpSettings>(json)!;
+            }
+            else
+            {
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"bin\Debug\net8.0", "smtpSettings.json");
+
+                if (!File.Exists(filePath))
+                {
+                    throw new FileNotFoundException($"The file {filePath} was not found.");
+                }
+
+                json = await File.ReadAllTextAsync(filePath);
+
+                TaskCache.SetKey(TASK_SMTP_SETTINGS_KEY, json);
+            }
+
             var email = new MimeMessage();
-            email.From.Add(new MailboxAddress("Vanessa Hegmann", "vanessa.hegmann@ethereal.email"));
+            email.From.Add(new MailboxAddress(smtpSettings.FromMailboxName, smtpSettings.FromEmail));
             email.To.Add(new MailboxAddress(to.FullName, to.Email));
             email.Subject = subject;
 
@@ -25,29 +46,25 @@ namespace Task.Notifications
 
             using (var client = new SmtpClient())
             {
-                client.Connect("smtp.ethereal.email", 587, SecureSocketOptions.StartTls);
+                client.Connect(smtpSettings.SmtpServer, smtpSettings.SmtpPort, SecureSocketOptions.StartTls);
 
-                client.Authenticate("vanessa.hegmann@ethereal.email", "HT3Z5UhKDcUvw9Y5tf");
+                client.Authenticate(smtpSettings.SmtpUsername, smtpSettings.SmtpPassword);
 
                 client.Send(email);
                 client.Disconnect(true);
             }
         }
 
-        public int SendTestEmail(TaskUser to, SmtpSettings smtp)
+        public void SendTestEmail(TaskUser to, SmtpSettings smtp)
         {
-            Random random = new Random();
-            int fourDigitCode = random.Next(1000, 10000);
-
             var email = new MimeMessage();
             email.From.Add(new MailboxAddress(smtp.FromMailboxName, smtp.FromEmail));
             email.To.Add(new MailboxAddress(to.FullName, smtp.FromEmail));
             email.Subject = "Test Email";
 
-            //TODO: Set up four digit code
             email.Body = new TextPart("plain")
             {
-                Text = $"Code: {fourDigitCode}"
+                Text = "This is a test Email"
             };
 
             using (var client = new SmtpClient())
@@ -59,7 +76,6 @@ namespace Task.Notifications
                 client.Send(email);
                 client.Disconnect(true);
             }
-            return fourDigitCode;
         }
 
         public bool IsSent(TaskUser to, SmtpSettings smtp)
@@ -73,26 +89,28 @@ namespace Task.Notifications
                 if (smtpTest.IsAuthenticated)
                 {
                     connection = true;
-                    System.Diagnostics.Debug.Print("Connected!");
+                    //TaskError.CreateUserError("Connected!");
                     smtpTest.Disconnect(true);
                 }
             }
-            //TODO: Set up error messages for user
             catch (SocketException ex)
             {
                 if (ex.SocketErrorCode == SocketError.HostNotFound)
                 {
-                    System.Diagnostics.Debug.Print("Error: No such host is known. Please check the server address.");
+                    TaskError.CreateUserError("Error: No such host is known. Please check the server address.");
                 }
                 else if (ex.SocketErrorCode == SocketError.ConnectionRefused)
                 {
-                    System.Diagnostics.Debug.Print("Error: Please check the port number.");
+                    TaskError.CreateUserError("Error: Please check the port number.");
                 }
             }
             catch (AuthenticationException ex)
             {
-                System.Diagnostics.Debug.Print("Error: Invalid email or password");
+                TaskError.CreateUserError("Error: Invalid email or password");
             }
+
+            SendTestEmail(to, smtp);
+
             return connection;
         }
 
@@ -100,16 +118,32 @@ namespace Task.Notifications
 
         public async Task<SmtpSettings> ReadSmtpSettings()
         {
-            //if(TaskCache.ContainsKey())
-            string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"bin\Debug\net8.0", "smtpSettings.json");
+            string json;
 
-            if (!File.Exists(filePath))
+            if(TaskCache.ContainsKey(TASK_SMTP_SETTINGS_KEY))
             {
-                throw new FileNotFoundException($"The file {filePath} was not found.");
+                json = TaskCache.GetKey(TASK_SMTP_SETTINGS_KEY)!;
+            }
+            else
+            {
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"bin\Debug\net8.0", "smtpSettings.json");
+
+                if (!File.Exists(filePath))
+                {
+                    throw new FileNotFoundException($"The file {filePath} was not found.");
+                }
+
+                json = await File.ReadAllTextAsync(filePath);
+
+                TaskCache.SetKey(TASK_SMTP_SETTINGS_KEY, json);
             }
 
-            var json = await File.ReadAllTextAsync(filePath);
-            return JsonSerializer.Deserialize<SmtpSettings>(json);
+            SmtpSettings? res = JsonSerializer.Deserialize<SmtpSettings>(json);
+            if(TypeCheck.Empty(res))
+            {
+                TaskError.CreateUserError("Smtp Settings Missing!");
+            }
+            return res!;
         }
 
         public async Task<bool> WriteSmtpSettings(SmtpSettings settings)
@@ -121,7 +155,10 @@ namespace Task.Notifications
                 throw new FileNotFoundException($"The file {filePath} was not found.");
             }
 
-            var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+            string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+
+            TaskCache.SetKey(TASK_SMTP_SETTINGS_KEY, json);
+
             await File.WriteAllTextAsync(filePath, json);
             return true;
         }
