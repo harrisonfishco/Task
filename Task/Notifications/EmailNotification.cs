@@ -10,6 +10,22 @@ namespace Task.Notifications
 {
     public class EmailNotification : INotification
     {
+
+        private string FilePath
+        {
+            get
+            {
+                string res = string.Empty;
+                try
+                {
+                    res = Path.Combine(Directory.GetCurrentDirectory(), "smtpSettings.json");
+#if DEBUG
+                    res = Path.Combine(Directory.GetCurrentDirectory(), @"bin/Debug/net8.0", "smtpSettings.json");
+#endif
+                } catch(Exception ex) { TaskError.HandleError(ex); }
+                return res;
+            }
+        }
         public readonly string TASK_SMTP_SETTINGS_KEY = "TASK_SMTP_SETTINGS_KEY";
         public async void Send(TaskUser to, string subject, string message, NotificationContentType type = NotificationContentType.Info)
         {
@@ -22,14 +38,12 @@ namespace Task.Notifications
             }
             else
             {
-                string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"bin\Debug\net8.0", "smtpSettings.json");
-
-                if (!File.Exists(filePath))
+                if (!File.Exists(FilePath))
                 {
-                    throw new FileNotFoundException($"The file {filePath} was not found.");
+                    TaskError.CreateUserError($"The file {FilePath} was not found.");
                 }
 
-                json = await File.ReadAllTextAsync(filePath);
+                json = await File.ReadAllTextAsync(FilePath);
 
                 TaskCache.SetKey(TASK_SMTP_SETTINGS_KEY, json);
             }
@@ -57,9 +71,9 @@ namespace Task.Notifications
 
         public void SendTestEmail(TaskUser to, SmtpSettings smtp)
         {
-            var email = new MimeMessage();
+            MimeMessage email = new MimeMessage();
             email.From.Add(new MailboxAddress(smtp.FromMailboxName, smtp.FromEmail));
-            email.To.Add(new MailboxAddress(to.FullName, smtp.FromEmail));
+            email.To.Add(new MailboxAddress(to.FullName, to.Email));
             email.Subject = "Test Email";
 
             email.Body = new TextPart("plain")
@@ -67,7 +81,7 @@ namespace Task.Notifications
                 Text = "This is a test Email"
             };
 
-            using (var client = new SmtpClient())
+            using (SmtpClient client = new SmtpClient())
             {
                 client.Connect(smtp.SmtpServer, smtp.SmtpPort, SecureSocketOptions.StartTls);
 
@@ -91,6 +105,7 @@ namespace Task.Notifications
                     connection = true;
                     //TaskError.CreateUserError("Connected!");
                     smtpTest.Disconnect(true);
+                    SendTestEmail(to, smtp);
                 }
             }
             catch (SocketException ex)
@@ -108,13 +123,10 @@ namespace Task.Notifications
             {
                 TaskError.CreateUserError("Error: Invalid email or password");
             }
-
-            SendTestEmail(to, smtp);
+            catch(Exception ex) { TaskError.HandleError(ex); }
 
             return connection;
         }
-
-        //TODO: Create the json with code
 
         public async Task<SmtpSettings> ReadSmtpSettings()
         {
@@ -126,14 +138,12 @@ namespace Task.Notifications
             }
             else
             {
-                string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"bin\Debug\net8.0", "smtpSettings.json");
-
-                if (!File.Exists(filePath))
+                if (!File.Exists(FilePath))
                 {
-                    throw new FileNotFoundException($"The file {filePath} was not found.");
+                    CreateDefaultFile();
                 }
 
-                json = await File.ReadAllTextAsync(filePath);
+                json = await File.ReadAllTextAsync(FilePath);
 
                 TaskCache.SetKey(TASK_SMTP_SETTINGS_KEY, json);
             }
@@ -148,19 +158,28 @@ namespace Task.Notifications
 
         public async Task<bool> WriteSmtpSettings(SmtpSettings settings)
         {
-            string filePath = Path.Combine(Directory.GetCurrentDirectory(), @"bin\Debug\net8.0", "smtpSettings.json");
-
-            if (!File.Exists(filePath))
+            try
             {
-                throw new FileNotFoundException($"The file {filePath} was not found.");
-            }
+                string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
 
+                TaskCache.SetKey(TASK_SMTP_SETTINGS_KEY, json);
+
+                await File.WriteAllTextAsync(FilePath, json);
+            } catch(Exception ex) { TaskError.HandleError(ex); }
+            
+            return true;
+        }
+
+        private async void CreateDefaultFile(SmtpSettings? settings = null)
+        {
+            if(TypeCheck.Empty(settings))
+            {
+                settings = new SmtpSettings();
+            }
+            
             string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
 
-            TaskCache.SetKey(TASK_SMTP_SETTINGS_KEY, json);
-
-            await File.WriteAllTextAsync(filePath, json);
-            return true;
+            await File.WriteAllTextAsync(FilePath, json);
         }
     }
 }
