@@ -41,6 +41,11 @@
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Current logged in user
+    /// </summary>
+    public TaskUser? User { get; private set; }
+
     // Checks if user is logged in
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -53,6 +58,10 @@
             if(TypeCheck.Empty(sess))
             {
                 NavigationManager.NavigateTo("/Login");
+            }
+            else
+            {
+                User = await ctx.TaskUsers.Where(u => u.UserGu == sess!.UserGu).FirstOrDefaultAsync();
             }
         }
     }

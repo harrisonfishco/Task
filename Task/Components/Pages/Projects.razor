@@ -1,9 +1,12 @@
-﻿@using Task.Components.Layout;
+﻿@using Microsoft.EntityFrameworkCore;
+@using Task.Components.Layout;
 @using Task.Models;
 
 @page "/Projects"
 @page "/Projects/{number}"
 @layout ModelLayout<TaskProject>
+
+@inject IDbContextFactory<Context> ContextFactory
 
 @code {
     [Parameter]
@@ -15,5 +18,24 @@
     protected override void OnParametersSet()
     {
         Layout.SetIdentity(Number);
+
+        Layout.BeforeSave += BeforeSave;
+    }
+
+    private void BeforeSave(object sender, Context context, TaskProject entity)
+    {
+        try
+        {
+            if (TypeCheck.NotEmpty(Layout.User))
+            {
+                context.Attach(Layout.User);
+
+                entity.Owner = Layout.User;
+            }
+            else
+            {
+                TaskError.CreateUserError("User cannot be null");
+            }
+        } catch(Exception ex) { TaskError.HandleError(ex); }
     }
 }

@@ -44,7 +44,7 @@
                 else if(CurrentMode == Mode.Insert)
                 {
                     <TaskButton Type="TaskButton.ButtonType.Neutral" Text="Cancel" OnClick="Search"/>
-                    <TaskButton Type="TaskButton.ButtonType.Positive" Text="Save" Disabled="!CanAdd" />
+                    <TaskButton Type="TaskButton.ButtonType.Positive" Text="Save" OnClick="Add" Disabled="!CanAdd" />
                 }
             </div>
             <div>
@@ -218,7 +218,45 @@
 
     private async Task Add()
     {
-        
+        T entity;
+        object? obj;
+        try
+        {
+            obj = Activator.CreateInstance(typeof(T));
+            if(TypeCheck.NotEmpty(obj))
+            {
+                entity = (T)obj;
+
+                entity.GetProperties().ForEach(p =>
+                {
+                    if (PropertyValues.ContainsKey(p.Name) && p.PropertyType == typeof(string))
+                    {
+                        p.SetValue(entity, PropertyValues[p.Name]);
+                    }
+                });
+
+                entity.SetProperty(ModelObject.PROPERTY_ADDTIMESTAMP, DateTime.Now);
+
+                using (Context context = ContextFactory.CreateDbContext())
+                {
+                    if(TypeCheck.NotEmpty(BeforeSave))
+                    {
+                        BeforeSave(this, context, entity);
+                    }
+
+                    context.Add(entity);
+                    await context.SaveChangesAsync();
+
+                    if(TypeCheck.NotEmpty(AfterSave))
+                    {
+                        AfterSave(this, context, entity);
+                    }
+                }
+
+                OnSelect(entity);
+            }
+
+        } catch(Exception ex) { TaskError.HandleError(ex); }
     }
 
     private void OnSelect(object? obj)
@@ -258,25 +296,12 @@
     private void SetAddMode()
     {
         current = null;
+        SetDefaultProperties();
         CurrentMode = Mode.Insert;
     }
 
     private void SetUpdateMode()
     {
         CurrentMode = Mode.Update;
-        using(Context context = ContextFactory.CreateDbContext())
-        {
-            T? obj = Activator.CreateInstance(Type) as T;
-
-            if(TypeCheck.NotEmpty(obj))
-            {
-                EntityEntry entry = context.Entry(obj);
-
-                //MethodInfo method = context.GetType().GetMethod("Set").MakeGenericMethod(Type);
-                //object? dbSet = method.Invoke(context, null);
-
-
-            }
-        }
     }
 }

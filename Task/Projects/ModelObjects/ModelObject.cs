@@ -5,6 +5,9 @@ namespace Task.ModelObjects
 {
     public class ModelObject
     {
+        public static readonly string PROPERTY_ADDTIMESTAMP = "AddTimestamp";
+        public static readonly string PROPERTY_UPDATETIMESTAMP = "UpdateTimestamp";
+
         public DateTime? AddTimestamp { get; set; }
         public DateTime? UpdateTimestamp { get; set; }
 
@@ -32,6 +35,11 @@ namespace Task.ModelObjects
             res = $"{GetName()}s";
 
             return res;
+        }
+
+        public void SetProperty(string propertyName, object? value)
+        {
+            GetType()!.GetProperty(propertyName)!.SetValue(this, value);
         }
 
         /// <summary>

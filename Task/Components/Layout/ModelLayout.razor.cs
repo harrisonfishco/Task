@@ -1,9 +1,15 @@
-﻿using Task.ModelObjects;
+﻿using Microsoft.EntityFrameworkCore;
+using Task.ModelObjects;
+
+public delegate void SaveHandler<T>(object sender, Task.Context context, T entity) where T : ModelObject;
 
 namespace Task.Components.Layout
 {
     public partial class ModelLayout<T> where T : ModelObject
     {
+        public event SaveHandler<T> BeforeSave;
+        public event SaveHandler<T> AfterSave;
+
         protected Mode CurrentMode { get; set; } = Mode.Find;
 
         public void SetIdentity(string? identity)
@@ -30,6 +36,35 @@ namespace Task.Components.Layout
         public Guid? GetIdentity()
         {
             return this.Identity;
+        }
+
+        /// <summary>
+        /// Sets PropertyValues to the default value of an empty T
+        /// </summary>
+        private void SetDefaultProperties()
+        {
+            object? obj;
+            T entity;
+            try
+            {
+                obj = Activator.CreateInstance(typeof(T));
+                if(TypeCheck.NotEmpty(obj))
+                {
+                    entity = (T)obj;
+
+                    foreach(string property in PropertyValues.Keys)
+                    {
+                        PropertyValues[property] = typeof(T).GetProperty(property)!.GetValue(entity)!.ToString()!;
+                    }
+                }
+                else
+                {
+                    foreach (string property in PropertyValues.Keys)
+                    {
+                        PropertyValues[property] = string.Empty;
+                    }
+                }
+            } catch(Exception ex) { TaskError.HandleError(ex); }
         }
 
         /// <summary>
