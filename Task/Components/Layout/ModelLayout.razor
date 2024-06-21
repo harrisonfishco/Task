@@ -37,9 +37,9 @@
                 else if(CurrentMode == Mode.Update)
                 {
                     <TaskButton Type="TaskButton.ButtonType.Info" Text="Search" OnClick="Search"/>
-                    <TaskButton Type="TaskButton.ButtonType.Positive" Text="Save" Disabled="!Changed"/>
+                    <TaskButton Type="TaskButton.ButtonType.Positive" Text="Save" OnClick="Update" Disabled="!Changed"/>
                     <TaskButton Type="TaskButton.ButtonType.Warning" Text="Undo" OnClick="Undo" Disabled="!Changed" />
-                    <TaskButton Type="TaskButton.ButtonType.Negative" Text="Delete" />
+                    <TaskButton Type="TaskButton.ButtonType.Negative" Text="Delete" OnClick="Delete" />
                 }
                 else if(CurrentMode == Mode.Insert)
                 {
@@ -69,7 +69,7 @@
         @if (CurrentMode == Mode.Find && searchObjects != null)
         {
             <TaskSection Title="Results" NoPadding="true">
-                <TaskGrid PrimaryObject="searchObjects" NoMargin="true" IsSelect="true" OnSelect="OnSelect"/>
+                <TaskGrid PrimaryObject="searchObjects" NoMargin="true" IsSelect="true" OnSelect="OnSelect" @ref="findGrid" />
             </TaskSection>
         }
         @Body
@@ -88,6 +88,8 @@
             .Contains(p.Name) == false)
         .Where(p => p.PropertyType != typeof(Guid))
         .ToList();
+
+    private TaskGrid<T>? findGrid;
 
     public bool Changed
     {
@@ -158,6 +160,7 @@
     {
         current = null;
         CurrentMode = Mode.Find;
+        searchObjects = null;
     }
 
     private void Undo()
@@ -212,7 +215,7 @@
                 query = query.Where(lambda);
             }
 
-            searchObjects = await query.ToListAsync();
+            searchObjects = await query.AsNoTracking().ToListAsync();
         }
     }
 
@@ -256,6 +259,73 @@
                 OnSelect(entity);
             }
 
+        } catch(Exception ex) { TaskError.HandleError(ex); }
+    }
+
+    private async Task Update()
+    {
+        try
+        {
+            if(TypeCheck.NotEmpty(current))
+            {
+                using(Context context = ContextFactory.CreateDbContext())
+                {
+                    context.Attach(current);
+
+                    current.GetProperties().ForEach(p =>
+                    {
+                        if (PropertyValues.ContainsKey(p.Name) && p.PropertyType == typeof(string))
+                        {
+                            current.SetProperty(p.Name, PropertyValues[p.Name]);
+                        }
+                    });
+
+                    current.SetProperty(ModelObject.PROPERTY_UPDATETIMESTAMP, DateTime.Now);
+
+                    if(TypeCheck.NotEmpty(BeforeUpdate))
+                    {
+                        BeforeUpdate(this, context, current);
+                    }
+
+                    await context.SaveChangesAsync();
+
+                    if(TypeCheck.NotEmpty(AfterUpdate))
+                    {
+                        AfterUpdate(this, context, current);
+                    }
+                }
+            }
+        } catch(Exception ex) { TaskError.HandleError(ex); }
+    }
+
+    private async Task Delete()
+    {
+        try
+        {
+            if(TypeCheck.NotEmpty(current))
+            {
+                using(Context context = ContextFactory.CreateDbContext())
+                {
+                    context.Attach(current);
+
+                    if(TypeCheck.NotEmpty(BeforeDelete))
+                    {
+                        BeforeDelete(this, context, current);
+                    }
+
+                    context.Remove(current);
+                    await context.SaveChangesAsync();
+
+                    context.ChangeTracker.Clear();
+
+                    if(TypeCheck.NotEmpty(AfterDelete))
+                    {
+                        AfterDelete(this, context, current);
+                    }
+                }
+
+                Search();
+            }
         } catch(Exception ex) { TaskError.HandleError(ex); }
     }
 

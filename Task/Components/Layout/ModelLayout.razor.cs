@@ -10,6 +10,12 @@ namespace Task.Components.Layout
         public event SaveHandler<T> BeforeSave;
         public event SaveHandler<T> AfterSave;
 
+        public event SaveHandler<T> BeforeUpdate;
+        public event SaveHandler<T> AfterUpdate;
+
+        public event SaveHandler<T> BeforeDelete;
+        public event SaveHandler<T> AfterDelete;
+
         protected Mode CurrentMode { get; set; } = Mode.Find;
 
         public void SetIdentity(string? identity)

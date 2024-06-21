@@ -1,12 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Task.ModelObjects
 {
     public class ModelObject
     {
+        #region DO NOT CHANGE
         public static readonly string PROPERTY_ADDTIMESTAMP = "AddTimestamp";
         public static readonly string PROPERTY_UPDATETIMESTAMP = "UpdateTimestamp";
+        #endregion
 
         public DateTime? AddTimestamp { get; set; }
         public DateTime? UpdateTimestamp { get; set; }
@@ -37,6 +38,21 @@ namespace Task.ModelObjects
             return res;
         }
 
+        /// <summary>
+        /// Get value of property from property name
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public object? GetProperty(string propertyName)
+        {
+            return GetType()!.GetProperty(propertyName)!.GetValue(this);
+        }
+
+        /// <summary>
+        /// Set value of property from property name
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <param name="value"></param>
         public void SetProperty(string propertyName, object? value)
         {
             GetType()!.GetProperty(propertyName)!.SetValue(this, value);
