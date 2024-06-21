@@ -223,6 +223,8 @@
     {
         T entity;
         object? obj;
+        string value;
+        int? maxLength;
         try
         {
             obj = Activator.CreateInstance(typeof(T));
@@ -230,18 +232,28 @@
             {
                 entity = (T)obj;
 
-                entity.GetProperties().ForEach(p =>
-                {
-                    if (PropertyValues.ContainsKey(p.Name) && p.PropertyType == typeof(string))
-                    {
-                        p.SetValue(entity, PropertyValues[p.Name]);
-                    }
-                });
-
-                entity.SetProperty(ModelObject.PROPERTY_ADDTIMESTAMP, DateTime.Now);
-
                 using (Context context = ContextFactory.CreateDbContext())
                 {
+                    entity.GetProperties().ForEach(p =>
+                    {
+                        if (PropertyValues.ContainsKey(p.Name) && p.PropertyType == typeof(string))
+                        {
+                            value = PropertyValues[p.Name];
+                            maxLength = context.Model.FindEntityType(typeof(T))!.FindProperty(p.Name)!.GetMaxLength();
+                            if (TypeCheck.Empty(maxLength) || value.Length <= maxLength)
+                            {
+                                p.SetValue(entity, value);
+                            }
+                            else if(TypeCheck.NotEmpty(maxLength))
+                            {
+                                p.SetValue(entity, value.Substring(0, (int)maxLength));
+                            }
+
+                        }
+                    });
+
+                    entity.SetProperty(ModelObject.PROPERTY_ADDTIMESTAMP, DateTime.Now);
+
                     if(TypeCheck.NotEmpty(BeforeSave))
                     {
                         BeforeSave(this, context, entity);
@@ -264,6 +276,8 @@
 
     private async Task Update()
     {
+        string value;
+        int? maxLength;
         try
         {
             if(TypeCheck.NotEmpty(current))
@@ -276,7 +290,16 @@
                     {
                         if (PropertyValues.ContainsKey(p.Name) && p.PropertyType == typeof(string))
                         {
-                            current.SetProperty(p.Name, PropertyValues[p.Name]);
+                            value = PropertyValues[p.Name];
+                            maxLength = context.Model.FindEntityType(typeof(T))!.FindProperty(p.Name)!.GetMaxLength();
+                            if (TypeCheck.Empty(maxLength) || value.Length <= maxLength)
+                            {
+                                current.SetProperty(p.Name, PropertyValues[p.Name]);
+                            }
+                            else if (TypeCheck.NotEmpty(maxLength))
+                            {
+                                current.SetProperty(p.Name, PropertyValues[p.Name].Substring(0, (int)maxLength));
+                            }
                         }
                     });
 

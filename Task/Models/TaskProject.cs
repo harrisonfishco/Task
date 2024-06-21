@@ -16,7 +16,7 @@ namespace Task.Models
         public Guid ProjectGu { get; set; }
 
         [Required]
-        [StringLength(20)]
+        [StringLength(60)]
         public string Name { get; set; } = string.Empty;
 
         [Required]
