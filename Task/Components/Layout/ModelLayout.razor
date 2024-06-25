@@ -52,13 +52,16 @@
                 {
                     @foreach (PropertyInfo prop in Properties)
                     {
-                        switch (prop.PropertyType)
+                        switch (prop.PropertyType.Name)
                         {
                             default:
                                 <div class="input-holder">
                                     <label for="@prop.Name">@prop.Name</label>
                                     <input id="@prop.Name" value="@PropertyValues[prop.Name]" class="model-layout-input" @oninput="((ChangeEventArgs e) => OnChange(e, prop.Name))" />
                                 </div>
+                                break;
+                            case nameof(Guid):
+
                                 break;
                         }
                     }

@@ -1,0 +1,52 @@
+﻿@namespace TTask
+@using Microsoft.EntityFrameworkCore
+@using Task.ModelObjects
+@inject IDbContextFactory<Context> ContextFactory
+
+@typeparam T where T : ModelObject
+
+<div class="container">
+    <label for="@instance">Label</label>
+    <div class="input" id="@instance">
+        <span class="link"></span>
+        <div class="icon-holder" @onclick="OpenSelector">
+            <span class="icon" />
+        </div>
+    </div>
+</div>
+
+@if(showSelector)
+{
+    <div class="background" @onclick="() => showSelector = false">
+        <div class="panel" @onclick:stopPropagation="true" @onclick:preventDefault="true">
+
+        </div>
+    </div>
+}
+
+@code {
+    public T? Value { get; set; }
+
+    private string instance = Guid.NewGuid().ToString();
+    private bool showSelector = false;
+
+    private void OpenSelector()
+    {
+        showSelector = true;
+    }
+
+    private void OpenLink()
+    {
+        try
+        {
+            if (TypeCheck.NotEmpty(Value))
+            {
+
+            }
+            else
+            {
+                OpenSelector();
+            }
+        } catch(Exception ex) { TaskError.HandleError(ex); }
+    }
+}
