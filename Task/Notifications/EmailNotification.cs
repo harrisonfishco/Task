@@ -10,6 +10,7 @@ namespace Task.Notifications
 {
     public class EmailNotification : INotification
     {
+        public readonly string TASK_SMTP_SETTINGS_KEY = "TASK_SMTP_SETTINGS_KEY";
 
         private string FilePath
         {
@@ -26,47 +27,55 @@ namespace Task.Notifications
                 return res;
             }
         }
-        public readonly string TASK_SMTP_SETTINGS_KEY = "TASK_SMTP_SETTINGS_KEY";
+
         public async void Send(TaskUser to, string subject, string message, NotificationContentType type = NotificationContentType.Info)
         {
-            SmtpSettings smtpSettings = new SmtpSettings();
-            string json;
-            if (TaskCache.ContainsKey(TASK_SMTP_SETTINGS_KEY))
+            try
             {
-                json = TaskCache.GetKey(TASK_SMTP_SETTINGS_KEY)!;
-                smtpSettings = JsonSerializer.Deserialize<SmtpSettings>(json)!;
-            }
-            else
-            {
-                if (!File.Exists(FilePath))
+                SmtpSettings smtpSettings = new SmtpSettings();
+                string json;
+                if (TaskCache.ContainsKey(TASK_SMTP_SETTINGS_KEY))
                 {
-                    TaskError.CreateUserError($"The file {FilePath} was not found.");
+                    json = TaskCache.GetKey(TASK_SMTP_SETTINGS_KEY)!;
+                    smtpSettings = JsonSerializer.Deserialize<SmtpSettings>(json)!;
+                }
+                else
+                {
+                    if (!File.Exists(FilePath))
+                    {
+                        CreateDefaultFile();
+                    }
+
+                    json = await File.ReadAllTextAsync(FilePath);
+
+                    TaskCache.SetKey(TASK_SMTP_SETTINGS_KEY, json);
                 }
 
-                json = await File.ReadAllTextAsync(FilePath);
+                MimeMessage email = new MimeMessage();
+                email.From.Add(new MailboxAddress(smtpSettings.FromMailboxName, smtpSettings.FromEmail));
+                email.To.Add(new MailboxAddress(to.FullName, to.Email));
+                email.Subject = subject;
 
-                TaskCache.SetKey(TASK_SMTP_SETTINGS_KEY, json);
+                email.Body = new TextPart("plain")
+                {
+                    Text = message
+                };
+
+                using (SmtpClient client = new SmtpClient())
+                {
+                    client.Connect(smtpSettings.SmtpServer, smtpSettings.SmtpPort, SecureSocketOptions.StartTls);
+
+                    client.Authenticate(smtpSettings.SmtpUsername, smtpSettings.SmtpPassword);
+
+                    client.Send(email);
+                    client.Disconnect(true);
+                }
             }
-
-            var email = new MimeMessage();
-            email.From.Add(new MailboxAddress(smtpSettings.FromMailboxName, smtpSettings.FromEmail));
-            email.To.Add(new MailboxAddress(to.FullName, to.Email));
-            email.Subject = subject;
-
-            email.Body = new TextPart("plain")
+            catch (Exception ex)
             {
-                Text = message
-            };
-
-            using (var client = new SmtpClient())
-            {
-                client.Connect(smtpSettings.SmtpServer, smtpSettings.SmtpPort, SecureSocketOptions.StartTls);
-
-                client.Authenticate(smtpSettings.SmtpUsername, smtpSettings.SmtpPassword);
-
-                client.Send(email);
-                client.Disconnect(true);
+                TaskError.CreateUserError(ex.Message);
             }
+            
         }
 
         public void SendTestEmail(TaskUser to, SmtpSettings smtp)
@@ -103,7 +112,6 @@ namespace Task.Notifications
                 if (smtpTest.IsAuthenticated)
                 {
                     connection = true;
-                    //TaskError.CreateUserError("Connected!");
                     smtpTest.Disconnect(true);
                     SendTestEmail(to, smtp);
                 }
@@ -131,32 +139,41 @@ namespace Task.Notifications
         public async Task<SmtpSettings> ReadSmtpSettings()
         {
             string json;
+            SmtpSettings ? res = null;
 
-            if(TaskCache.ContainsKey(TASK_SMTP_SETTINGS_KEY))
+            try
             {
-                json = TaskCache.GetKey(TASK_SMTP_SETTINGS_KEY)!;
-            }
-            else
-            {
-                if (!File.Exists(FilePath))
+                if (TaskCache.ContainsKey(TASK_SMTP_SETTINGS_KEY))
                 {
-                    CreateDefaultFile();
+                    json = TaskCache.GetKey(TASK_SMTP_SETTINGS_KEY)!;
+                }
+                else
+                {
+                    if (!File.Exists(FilePath))
+                    {
+                        CreateDefaultFile();
+                    }
+
+                    json = await File.ReadAllTextAsync(FilePath);
+
+                    TaskCache.SetKey(TASK_SMTP_SETTINGS_KEY, json);
                 }
 
-                json = await File.ReadAllTextAsync(FilePath);
-
-                TaskCache.SetKey(TASK_SMTP_SETTINGS_KEY, json);
+                res = JsonSerializer.Deserialize<SmtpSettings>(json);
+                if (TypeCheck.Empty(res))
+                {
+                    TaskError.CreateUserError("Smtp Settings Missing!");
+                }
             }
-
-            SmtpSettings? res = JsonSerializer.Deserialize<SmtpSettings>(json);
-            if(TypeCheck.Empty(res))
+            catch (Exception ex)
             {
-                TaskError.CreateUserError("Smtp Settings Missing!");
+                TaskError.HandleError(ex);
             }
+
             return res!;
         }
 
-        public async Task<bool> WriteSmtpSettings(SmtpSettings settings)
+        public async void WriteSmtpSettings(SmtpSettings settings)
         {
             try
             {
@@ -165,21 +182,30 @@ namespace Task.Notifications
                 TaskCache.SetKey(TASK_SMTP_SETTINGS_KEY, json);
 
                 await File.WriteAllTextAsync(FilePath, json);
-            } catch(Exception ex) { TaskError.HandleError(ex); }
-            
-            return true;
+            } 
+            catch(Exception ex) 
+            { 
+                TaskError.HandleError(ex); 
+            }
         }
 
         private async void CreateDefaultFile(SmtpSettings? settings = null)
         {
-            if(TypeCheck.Empty(settings))
+            try
             {
-                settings = new SmtpSettings();
-            }
-            
-            string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+                if (TypeCheck.Empty(settings))
+                {
+                    settings = new SmtpSettings();
+                }
 
-            await File.WriteAllTextAsync(FilePath, json);
+                string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+
+                await File.WriteAllTextAsync(FilePath, json);
+            }
+            catch (Exception ex)
+            {
+                TaskError.HandleError(ex);
+            }
         }
     }
 }

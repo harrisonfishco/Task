@@ -8,7 +8,7 @@
 @inject NavigationManager NavigationManager;
 
 @using Notifications;
-@inject NotificationService Email;
+@inject NotificationService Notification;
 @inject EmailNotification EmailNotif;
 
 <PageTitle>Task - Settings</PageTitle>
@@ -31,7 +31,7 @@
 @if (user.Role == "0")
 {
     <TaskSection Title="SMTP Settings">
-        <TaskTextInput Disabled="false" Label="From Mailbox Name" @bind-Value="SmtpSettings.FromMailboxName" />
+        <TaskTextInput Disabled="false" Label="From Mailbox Name" @bind-Value="SmtpSettings.FromMailboxName" @onfocus="DisableSave" @onclick="DisableSave"/>
         <TaskTextInput Disabled="false" Label="From Email" @bind-Value="SmtpSettings.FromEmail" />
         <br />
         <TaskTextInput Disabled="false" Label="Smtp Server" @bind-Value="SmtpSettings.SmtpServer" />
@@ -41,7 +41,7 @@
         <br />
         <TaskButton OnClick="ValidateSettings" Text="Test" Type="TaskButton.ButtonType.Default"/>
         <br />
-        @if (test)
+        @if (smtpSettingsVerified)
         {
             <TaskButton OnClick="Save" Text="Save" Type="TaskButton.ButtonType.Default"/>
         }
@@ -51,8 +51,7 @@
 @code {
     private TaskUser user = new TaskUser();
     private KeyValuePair<string, string> role;
-    private bool test = false;
-    private int testEmailCode = 0;
+    private bool smtpSettingsVerified = false;
 
     public string FullName { get; set; } = string.Empty;
     public string NewPassword { get; set; } = string.Empty;
@@ -98,13 +97,9 @@
                         {
                             SmtpSettings = await EmailNotif.ReadSmtpSettings();
                         }
-                        catch (FileNotFoundException ex)
-                        {
-                            System.Diagnostics.Debug.Print("Configuration file not found.");
-                        }
                         catch (Exception ex)
                         {
-                            System.Diagnostics.Debug.Print($"An error occurred: {ex.Message}");
+                            TaskError.HandleError(ex);
                         }
 
                         StateHasChanged();
@@ -131,15 +126,34 @@
 
     private void ValidateSettings()
     {
-        test = EmailNotif.IsSent(user, SmtpSettings);
+        try
+        {
+            smtpSettingsVerified = EmailNotif.IsSent(user, SmtpSettings);
+        }
+        catch (Exception ex)
+        {
+            TaskError.HandleError(ex);
+        }
     }
 
     //Save tested and working smtp settings
-    private async Task Save()
+    private void Save()
     {
-        if(test)
+        try
         {
-            await EmailNotif.WriteSmtpSettings(SmtpSettings);
+            if (smtpSettingsVerified)
+            {
+                EmailNotif.WriteSmtpSettings(SmtpSettings);
+            }
         }
+        catch (Exception ex)
+        {
+            TaskError.HandleError(ex);
+        }
+    }
+
+    private void DisableSave()
+    {
+        smtpSettingsVerified = false;
     }
 }
