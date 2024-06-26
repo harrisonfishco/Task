@@ -1,6 +1,8 @@
 ﻿@namespace TTask
+@using System.Reflection
 @using Microsoft.EntityFrameworkCore
 @using Task.ModelObjects
+
 @inject IDbContextFactory<Context> ContextFactory
 
 @typeparam T where T : ModelObject
@@ -19,7 +21,23 @@
 {
     <div class="background" @onclick="() => showSelector = false">
         <div class="panel" @onclick:stopPropagation="true" @onclick:preventDefault="true">
-
+            <div class="panel-header">
+                <span class="close" @onclick="() => showSelector = false">✖</span>
+            </div>
+            <div class="panel-body">
+                @foreach(PropertyInfo prop in Properties)
+                {
+                    switch(prop.PropertyType.Name)
+                    {
+                        default:
+                            <div class="input-holder">
+                                <label for="@prop.Name">@prop.Name</label>
+                                <input id="@prop.Name" value="@PropertyValues[prop.Name]" class="selector-input" @oninput="((ChangeEventArgs e) => OnChange(e, prop.Name))" />
+                            </div>
+                            break;
+                    }
+                }
+            </div>
         </div>
     </div>
 }
@@ -29,6 +47,30 @@
 
     private string instance = Guid.NewGuid().ToString();
     private bool showSelector = false;
+
+    private List<PropertyInfo> Properties { get; set; } = ModelObject.GetProperties<T>()
+        .Where(p => typeof(ModelObject)
+            .GetProperties()
+            .Select(pr => pr.Name)
+            .Contains(p.Name) == false)
+        .Where(p => p.PropertyType != typeof(Guid))
+        .ToList();
+
+    private Dictionary<string, string> PropertyValues { get; } = new Dictionary<string, string>();
+
+    protected override void OnParametersSet()
+    {
+        if(PropertyValues.Count == 0)
+        {
+            foreach(PropertyInfo prop in ModelObject.GetProperties<T>())
+            {
+                if(prop.PropertyType == typeof(string))
+                {
+                    PropertyValues.Add(prop.Name, string.Empty);
+                }
+            }
+        }
+    }
 
     private void OpenSelector()
     {
@@ -48,5 +90,13 @@
                 OpenSelector();
             }
         } catch(Exception ex) { TaskError.HandleError(ex); }
+    }
+
+    private void OnChange(ChangeEventArgs e, string key)
+    {
+        if(e.Value is string value)
+        {
+            PropertyValues[key] = value;
+        }
     }
 }

@@ -45,6 +45,11 @@
     left: 0;
     background-color: rgba(0,0,0,0.2);
     z-index: 100;
+    transition: opacity 0.25s;
+}
+
+.background:hover:not(:has(*:hover)) {
+    opacity: 0.4;
 }
 
 .panel {
@@ -56,4 +61,31 @@
     background-color: #fff;
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
+}
+
+.panel-header > .close {
+    padding: 4px 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 24px;
+    display: inline-block;
+    float: right;
+    border-radius: 100%;
+    margin: 2px;
+    transition: background-color 0.25s;
+}
+
+.close:hover {
+    background-color: rgba(0, 0, 0, 0.14);
+}
+
+.selector-input {
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.input-holder {
+    margin: 8px;
+    display: inline-block;
 }
