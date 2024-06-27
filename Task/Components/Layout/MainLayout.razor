@@ -6,27 +6,31 @@
 @inject NavigationManager NavigationManager;
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
+
+    <div class="wrapper">
+        <div class="sidebar">
+            <SideBarNavMenu />
+        </div>
+        <div class="main-area">
+            <div class="topbar">
+                <NavMenu />
+            </div>
+            <main>
+                <article class="content px-4">
+                    <ErrorBoundary @ref="errorBoundary">
+                        <ChildContent>
+                            @Body
+                        </ChildContent>
+                        <ErrorContent Context="Exception">
+                            <TaskModal Title="Error" Text="@Exception.Message" OnClose="@OnErrorDialogClose" DialogType="TaskModal.ModalDialogType.Ok"></TaskModal>
+                        </ErrorContent>
+                    </ErrorBoundary>
+                </article>
+            </main>
+        </div>
     </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-            <button style="margin: 4px" id="submit" value="Logout" @onclick="OnLogout">Logout</button>
-        </div>
 
-        <article class="content px-4">
-            <ErrorBoundary @ref="errorBoundary">
-                <ChildContent>
-                    @Body
-                </ChildContent>
-                <ErrorContent Context="Exception">
-                    <TaskModal Title="Error" Text="@Exception.Message" OnClose="@OnErrorDialogClose" DialogType="TaskModal.ModalDialogType.Ok"></TaskModal>
-                </ErrorContent>
-            </ErrorBoundary>
-        </article>
-    </main>
 </div>
 
 
