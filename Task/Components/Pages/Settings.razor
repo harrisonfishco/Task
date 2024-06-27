@@ -7,10 +7,6 @@
 @inject IDbContextFactory<Context> ContextFactory;
 @inject NavigationManager NavigationManager;
 
-@using Notifications;
-@inject NotificationService Notification;
-@inject EmailNotification EmailNotif;
-
 <PageTitle>Task - Settings</PageTitle>
 
 <h1>Settings - @user.Role</h1>
@@ -31,20 +27,23 @@
 @if (user.Role == "0")
 {
     <TaskSection Title="SMTP Settings">
-        <TaskTextInput Disabled="false" Label="From Mailbox Name" @bind-Value="SmtpSettings.FromMailboxName" @onfocus="DisableSave" @onclick="DisableSave"/>
-        <TaskTextInput Disabled="false" Label="From Email" @bind-Value="SmtpSettings.FromEmail" />
+        <TaskTextInput Disabled="false" Label="From Mailbox Name" @bind-Value="SmtpSettings.FromMailboxName" @oninput="DisableSave"/>
+        <TaskTextInput Disabled="false" Label="From Email" @bind-Value="SmtpSettings.FromEmail" @oninput="DisableSave" />
         <br />
-        <TaskTextInput Disabled="false" Label="Smtp Server" @bind-Value="SmtpSettings.SmtpServer" />
-        <TaskTextInput Disabled="false" Label="Smtp Username(Email)" @bind-Value="SmtpSettings.SmtpUsername" />
-        <TaskTextInput Disabled="false" Label="Smtp Password" Type="TaskTextInput<string>.InputType.Password" @bind-Value="SmtpSettings.SmtpPassword" />
-        <TaskTextInput Disabled="false" Label="Smtp Port" Type="TaskTextInput<short>.InputType.Short" @bind-Value="SmtpSettings.SmtpPort"/>
+        <TaskTextInput Disabled="false" Label="Smtp Server" @bind-Value="SmtpSettings.SmtpServer" @oninput="DisableSave" />
+        <TaskTextInput Disabled="false" Label="Smtp Username" @bind-Value="SmtpSettings.SmtpUsername" @oninput="DisableSave" />
+        <TaskTextInput Disabled="false" Label="Smtp Password" Type="TaskTextInput<string>.InputType.Password" @bind-Value="SmtpSettings.SmtpPassword" @oninput="DisableSave" />
+        <TaskTextInput Disabled="false" Label="Smtp Port" Type="TaskTextInput<short>.InputType.Short" @bind-Value="SmtpSettings.SmtpPort" @oninput="DisableSave" />
         <br />
-        <TaskButton OnClick="ValidateSettings" Text="Test" Type="TaskButton.ButtonType.Default"/>
-        <br />
+        <TaskButton OnClick="ValidateSettings" Text="Test" Type="TaskButton.ButtonType.Default" />
         @if (smtpSettingsVerified)
         {
-            <TaskButton OnClick="Save" Text="Save" Type="TaskButton.ButtonType.Default"/>
+            <span class="save-button">
+                <TaskButton OnClick="Save" Text="Save" Type="TaskButton.ButtonType.Positive" />
+            </span>
         }
+       
+
     </TaskSection>
 }
 
@@ -60,6 +59,7 @@
     public Dictionary<string, string> Roles { get; set; } = new Dictionary<string, string>();
 
     internal SmtpSettings SmtpSettings { get; set; } = new SmtpSettings();
+    Notifications.EmailNotification EmailNotif = new Notifications.EmailNotification();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
