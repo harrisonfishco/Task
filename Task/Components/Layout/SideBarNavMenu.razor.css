@@ -1,0 +1,60 @@
+﻿/* Basic reset for styling */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+
+.navbar {
+    overflow: visible; /* This can help if input was getting clipped */
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 100%;
+    overflow: auto;
+    background-color: #333;
+    color: white;
+    padding: 10px 0;
+    z-index: 1000; /* Higher z-index to ensure it's above other elements */
+}
+
+/* Styling the navigation links */
+.nav-link {
+    display: block; /* Makes links expand to the width of the sidebar */
+    padding: 10px 20px; /* Adds padding to the links */
+    text-decoration: none; /* Removes underline from links */
+    color: white; /* White text color for links */
+    font-size: 16px; /* Increases font size */
+}
+
+    /* Hover effects for links */
+    .nav-link:hover {
+        background-color: #555; /* Darker shade for hover effect */
+        color: #fff; /* Keep text white on hover */
+    }
+
+/* Styling the search input */
+.inputbox[type="text"] {
+    width: 80%; /* Adjust the width as needed */
+    padding: 8px 10px; /* Top and bottom padding + left and right padding */
+    margin: 10px auto; /* Centers the input in the sidebar */
+    display: block; /* Ensures it takes a new line and fills width */
+    border: 2px solid #ccc; /* Subtle border color */
+    border-radius: 8px; /* Rounded corners */
+    background-color: #f8f8f8; /* Light background color */
+    color: #333; /* Dark text color for contrast */
+    font-size: 16px; /* Makes the text large enough to be easily readable */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Soft shadow for 3D effect */
+    outline: none; /* Removes the default focus outline */
+}
+
+    .inputbox[type="text"]:focus {
+        border-color: #0056b3; /* Changes the border color on focus for visibility */
+        box-shadow: 0 0 8px rgba(0,86,179,0.5); /* More prominent shadow on focus */
+    }
+
+    .inputbox[type="text"]::placeholder {
+        color: #aaa; /* Lighter text color for the placeholder */
+        font-style: italic; /* Italicize placeholder text */
+    }

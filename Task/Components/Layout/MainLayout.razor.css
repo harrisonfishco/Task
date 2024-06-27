@@ -18,10 +18,43 @@ body, html {
 }
 
 /* Top bar from the previous CSS */
-.topbar {
+.wrapper {
+    display: flex;
+    height: 100vh; /* Full viewport height to make sure it takes all vertical space */
+    width: 100vw; /* Full viewport width */
+}
+
+/* Sidebar styling */
+.sidebar {
+    width: 200px; /* Adjust according to your preference */
     background-color: #333;
     color: white;
-    margin: 0;
+    height: 100%;
+}
+
+    /* Navigation links inside the sidebar */
+    .sidebar .nav-link {
+        display: block;
+        padding: 10px 20px;
+        text-decoration: none;
+        color: white;
+    }
+
+        .sidebar .nav-link:hover {
+            background-color: #555;
+        }
+
+.topbar {
+    flex-grow: 1; /* Takes up the remaining space */
+    background-color: #f4f4f4; /* Light background color for the content area */
+}
+
+input[type="text"] {
+    width: 160px; /* Adjust width to fit within the sidebar padding */
+    margin: 10px; /* Center it within the sidebar */
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
 }
 
 /* Main content area */
@@ -35,10 +68,19 @@ main {
     overflow: hidden;
 }
 
+.main-area {
+    flex-grow: 1; /* Allows the main area to take all available space */
+    flex-direction: column;
+    width: calc(100% - 200px); /* Adjust width to account for the sidebar */
+    min-height: 100vh; /* Full height */
+}
+
 .content {
     max-width: 1200px;
-    margin: auto;
+    width: 100%; /* Make sure it expands to fill the container if not 1200px wide */
+    margin: auto; /* Centers in the available space */
     padding: 20px;
+    flex-grow: 1; /* Ensures it takes up any available space left by topbar */
 }
 
 /* Error UI styling */

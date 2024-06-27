@@ -1,0 +1,32 @@
+﻿
+<input @bind="searchText" @bind:event="oninput" placeholder="Search links..." class="inputbox"/>
+
+
+
+<nav class="navbar">
+    @foreach (var link in FilteredLinks)
+    {
+        <a class="nav-link" href="@link.Href">@link.Text</a>
+    }
+</nav>
+
+@code {
+    private string searchText = string.Empty;
+
+    private List<NavLink> navLinks = new List<NavLink>
+    {
+        new NavLink { Href = "#", Text = "Home" },
+        new NavLink { Href = "counter", Text = "Counter" },
+        new NavLink { Href = "weather", Text = "Weather" },
+        new NavLink { Href = "settings", Text = "Settings" }
+    };
+
+    private IEnumerable<NavLink> FilteredLinks =>
+        navLinks.Where(link => link.Text.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+
+    private class NavLink
+    {
+        public string Href { get; set; }
+        public string Text { get; set; }
+    }
+}

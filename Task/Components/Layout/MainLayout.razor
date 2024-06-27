@@ -5,15 +5,24 @@
 @inject NavigationManager NavigationManager;
 
 <div class="page">
-    <div class="topbar">
-        <NavMenu />
+    
+    <div class="wrapper">
+        <div class="sidebar">
+            <SideBarNavMenu />
+        </div>
+        <div class="main-area">
+            <div class="topbar">
+                <NavMenu />
+            </div>
+            <main>
+                <article class="content px-4">
+                    @Body
+                </article>
+            </main>
+        </div>
     </div>
 
-    <main>
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+    
 </div>
 
 <div id="blazor-error-ui">
