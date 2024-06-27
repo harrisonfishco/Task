@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection;
 using Task.Login;
 using Task.Lookup;
 using Task.ModelObjects;
@@ -20,6 +22,11 @@ namespace Task
             : base(options)
         {
             
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.AddInterceptors(new NonEmptyStringInterceptor());
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -56,6 +63,24 @@ namespace Task
                 res = PasswordHelper.VerifyPassword(password, user.Password);
             }
 
+            return res;
+        }
+
+        public PropertyInfo? GetPrimaryKey<TEntity>(TEntity entity) where TEntity : class
+        {
+            PropertyInfo? res = null;
+
+            IEntityType? entityType = Model.FindEntityType(typeof(TEntity));
+            if (TypeCheck.NotEmpty(entityType))
+            {
+                IKey? pk = entityType.FindPrimaryKey();
+                if(TypeCheck.NotEmpty(pk))
+                {
+                    IProperty prop = pk.Properties.First();
+                    res = prop.PropertyInfo;
+                }
+            }
+           
             return res;
         }
     }

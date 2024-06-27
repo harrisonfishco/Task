@@ -31,7 +31,7 @@
         {
             TaskUserSession? sess = await ctx.TaskUserSessions.Where(s => s.UserSessionGu == sessionId).FirstOrDefaultAsync();
 
-            if(sess != null)
+            if(TypeCheck.NotEmpty(sess))
             {
                 NavigationManager.NavigateTo("/");
             }
@@ -52,6 +52,8 @@
             if(canLogin)
             {
                 TaskUser user = await ctx.TaskUsers.FirstAsync(u => u.Username == Model.Username);
+
+                TaskCache.SetKey("TASKUSER_ROLE", user.Role);
 
                 TaskUserSession tus = new TaskUserSession();
                 tus.TaskUser = user;

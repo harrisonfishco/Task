@@ -6,7 +6,7 @@
             <span class="task-section-collapse-icon task-icon @GetCaret()" @onclick="Toggle"></span>
         }
     </div>
-    <div class="task-section-body-container @GetCollapseClass()">
+    <div class="task-section-body-container @GetCollapseClass() @(NoPadding ? "task-section-no-padding" : "")">
         @ChildContent
     </div>
 </div>
@@ -20,6 +20,9 @@
 
     [Parameter]
     public bool StartCollapsed { get; set; } = false;
+
+    [Parameter]
+    public bool NoPadding { get; set; } = false;
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

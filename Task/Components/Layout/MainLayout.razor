@@ -1,37 +1,44 @@
 ﻿@using Microsoft.EntityFrameworkCore;
+@using Task.Components.Shared;
 @inherits LayoutComponentBase
 @inject IDbContextFactory<Context> ContextFactory;
 @inject Session session;
 @inject NavigationManager NavigationManager;
 
 <div class="page">
-    
-    <div class="wrapper">
-        <div class="sidebar">
-            <SideBarNavMenu />
-        </div>
-        <div class="main-area">
-            <div class="topbar">
-                <NavMenu />
-            </div>
-            <main>
-                <article class="content px-4">
-                    @Body
-                </article>
-            </main>
-        </div>
+    <div class="sidebar">
+        <NavMenu />
     </div>
 
-    
+    <main>
+        <div class="top-row px-4">
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <button style="margin: 4px" id="submit" value="Logout" @onclick="OnLogout">Logout</button>
+        </div>
+
+        <article class="content px-4">
+            <ErrorBoundary @ref="errorBoundary">
+                <ChildContent>
+                    @Body
+                </ChildContent>
+                <ErrorContent Context="Exception">
+                    <TaskModal Title="Error" Text="@Exception.Message" OnClose="@OnErrorDialogClose" DialogType="TaskModal.ModalDialogType.Ok"></TaskModal>
+                </ErrorContent>
+            </ErrorBoundary>
+        </article>
+    </main>
 </div>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
 
 @code {
+
+    private ErrorBoundary? errorBoundary;
+
+    private void OnErrorDialogClose(bool accepted)
+    {
+        StateHasChanged();
+    }
+
     // Checks if user is logged in
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -41,7 +48,7 @@
         {
             TaskUserSession? sess = await ctx.TaskUserSessions.Where(s => s.UserSessionGu == sessionId).FirstOrDefaultAsync();
 
-            if (sess == null || sess == default)
+            if(TypeCheck.Empty(sess))
             {
                 NavigationManager.NavigateTo("/Login");
             }
@@ -52,4 +59,10 @@
     {
         await session.DeleteSession();
     }
+
+    protected override void OnParametersSet()
+    {
+        errorBoundary?.Recover();
+    }
+
 }

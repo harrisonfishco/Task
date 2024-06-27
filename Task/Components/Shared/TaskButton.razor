@@ -1,6 +1,6 @@
 ﻿
 <button 
-        class="@GetButtonType()" 
+        class="@GetButtonType() @(Compact ? "task-btn-compact" : "")" 
         @onclick="OnClick">
         @Text
 </button>
@@ -11,6 +11,9 @@
 
     [Parameter]
     public ButtonType Type { get; set; } = ButtonType.Default;
+
+    [Parameter]
+    public bool Compact { get; set; } = false;
 
     [Parameter]
     public EventCallback<MouseEventArgs> OnClick { get; set; }
