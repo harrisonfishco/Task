@@ -141,6 +141,11 @@ namespace Task
         {
             return FullName;
         }
+
+        public override string GetName()
+        {
+            return "User";
+        }
     }
 
     public class TaskUserSession : ModelObject

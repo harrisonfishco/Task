@@ -102,7 +102,7 @@ namespace Task.Components.Shared
             }
             set
             {
-                if(Property.PropertyType == typeof(string)) 
+                if(Property.PropertyType == typeof(string) && Property.SetMethod != null) 
                 {
                     Property.SetValue(Obj, value);
                 }

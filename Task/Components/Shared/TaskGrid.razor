@@ -30,7 +30,7 @@
                 </th>
                 @foreach (PropertyInfo prop in Properties)
                 {
-                    <th title="@TaskGrid.GetTitle(ObjectType, prop)" >@prop.Name</th>
+                    <th title="@TaskGrid.GetTitle(ObjectType, prop)">@(ModelObject.GetFormattedPropertyNameFromName(prop.Name))</th>
                 }
             </tr>
         </thead>

@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Task.ModelObjects
 {
@@ -137,6 +138,21 @@ namespace Task.ModelObjects
             }
 
             return res;
+        }
+
+        /// <summary>
+        /// Formats any concatted camel case strings (eg. "FullName" -> "Full Name")
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public static string GetFormattedPropertyNameFromName(string propertyName)
+        {
+            if(string.IsNullOrEmpty(propertyName))
+            {
+                return propertyName;
+            }
+
+            return Regex.Replace(propertyName, "(?<!^)([A-Z])", " $1");
         }
 
         /// <summary>

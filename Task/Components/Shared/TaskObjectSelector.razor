@@ -1,7 +1,9 @@
 ﻿@namespace TTask
+@using System.Linq.Expressions;
 @using System.Reflection
 @using Microsoft.EntityFrameworkCore
 @using Task.ModelObjects
+@using Task.Components.Shared;
 
 @inject IDbContextFactory<Context> ContextFactory
 
@@ -10,7 +12,7 @@
 <div class="container">
     <label for="@instance">Label</label>
     <div class="input" id="@instance">
-        <span class="link"></span>
+        <span class="link">@(TypeCheck.NotEmpty(Value) ? Value.ToString() : "")</span>
         <div class="icon-holder" @onclick="OpenSelector">
             <span class="icon" />
         </div>
@@ -22,21 +24,28 @@
     <div class="background" @onclick="() => showSelector = false">
         <div class="panel" @onclick:stopPropagation="true" @onclick:preventDefault="true">
             <div class="panel-header">
+                <h1 class="title">@(ModelObject.GetName<T>()) Picker</h1>
+                <TaskButton Type="TaskButton.ButtonType.Warning" Text="Find" OnClick="Find"/>
                 <span class="close" @onclick="() => showSelector = false">✖</span>
             </div>
             <div class="panel-body">
-                @foreach(PropertyInfo prop in Properties)
-                {
-                    switch(prop.PropertyType.Name)
+                <div class="inputs">
+                    @foreach (PropertyInfo prop in Properties)
                     {
-                        default:
-                            <div class="input-holder">
-                                <label for="@prop.Name">@prop.Name</label>
-                                <input id="@prop.Name" value="@PropertyValues[prop.Name]" class="selector-input" @oninput="((ChangeEventArgs e) => OnChange(e, prop.Name))" />
-                            </div>
-                            break;
+                        switch (prop.PropertyType.Name)
+                        {
+                            default:
+                                <div class="input-holder">
+                                    <label for="@prop.Name">@ModelObject.GetFormattedPropertyNameFromName(prop.Name)</label>
+                                    <input id="@prop.Name" value="@PropertyValues[prop.Name]" class="selector-input" @oninput="((ChangeEventArgs e) => OnChange(e, prop.Name))" />
+                                </div>
+                                break;
+                        }
                     }
-                }
+                </div>
+                <TaskSection Title="Results" NoPadding="true">
+                    <TaskGrid PrimaryObject="searchObjects" NoMargin="true" IsSelect="true" OnSelect="(e) => SelectObject(e)" @ref="findGrid"/>
+                </TaskSection>
             </div>
         </div>
     </div>
@@ -45,8 +54,12 @@
 @code {
     public T? Value { get; set; }
 
+
     private string instance = Guid.NewGuid().ToString();
     private bool showSelector = false;
+
+    private List<T> searchObjects = new List<T>();
+    private TaskGrid<T>? findGrid;
 
     private List<PropertyInfo> Properties { get; set; } = ModelObject.GetProperties<T>()
         .Where(p => typeof(ModelObject)
@@ -70,6 +83,61 @@
                 }
             }
         }
+    }
+
+    private void SelectObject(object? obj)
+    {
+        try
+        {
+            if(TypeCheck.NotEmpty(obj) && obj is T instance)
+            {
+                Value = instance; 
+                showSelector = false;
+            }
+        } catch(Exception ex) { TaskError.HandleError(ex); }
+    }
+
+    private async Task Find()
+    {
+        try
+        {
+            if(TypeCheck.NotEmpty(searchObjects))
+            {
+                searchObjects.Clear();
+            }
+
+            using(Context context = ContextFactory.CreateDbContext())
+            {
+                IEnumerable<string> navigationProperties = context.Model.FindEntityType(typeof(T))!
+                    .GetNavigations()
+                    .Select(n => n.Name);
+
+                IQueryable<T> query = context.Set<T>();
+
+                foreach(string navigationProperty in navigationProperties)
+                {
+                    query = query.Include(navigationProperty);
+                }
+
+                foreach(KeyValuePair<string, string> filter in PropertyValues.Where(p => TypeCheck.NotEmpty(p.Value)))
+                {
+                    ParameterExpression parameter = Expression.Parameter(typeof(T), "t");
+                    MemberExpression property = Expression.Property(parameter, filter.Key);
+                    ConstantExpression value = Expression.Constant(filter.Value);
+                    var equal = Expression.Equal(property, value);
+                    var lambda = Expression.Lambda<Func<T, bool>>(equal, parameter);
+
+                    query = query.Where(lambda);
+                }
+
+                searchObjects = await query.AsNoTracking().ToListAsync();
+            }
+
+            if(TypeCheck.NotEmpty(findGrid))
+            {
+                findGrid.Refresh();
+            }
+        } catch(Exception ex) { TaskError.HandleError(ex); }
     }
 
     private void OpenSelector()
