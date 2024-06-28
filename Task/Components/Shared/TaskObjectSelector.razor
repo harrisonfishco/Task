@@ -10,7 +10,7 @@
 @typeparam T where T : ModelObject
 
 <div class="container">
-    <label for="@instance">Label</label>
+    <label for="@instance">@Name</label>
     <div class="input" id="@instance">
         <span class="link">@(TypeCheck.NotEmpty(Value) ? Value.ToString() : "")</span>
         <div class="icon-holder" @onclick="OpenSelector">
@@ -53,6 +53,9 @@
 
 @code {
     public T? Value { get; set; }
+
+    [Parameter]
+    public string Name { get; set; } = ModelObject.GetName<T>();
 
 
     private string instance = Guid.NewGuid().ToString();
