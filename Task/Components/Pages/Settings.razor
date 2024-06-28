@@ -136,7 +136,9 @@
         }
     }
 
-    //Save tested and working smtp settings
+    /// <summary>
+    /// Save tested and working smtp settings
+    /// </summary>
     private void Save()
     {
         try
@@ -144,6 +146,7 @@
             if (smtpSettingsVerified)
             {
                 EmailNotif.WriteSmtpSettings(SmtpSettings);
+                smtpSettingsVerified = false;
             }
         }
         catch (Exception ex)
