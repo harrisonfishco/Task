@@ -17,22 +17,49 @@
     <br />
     <TaskDropDown Label="Role" Options="@Roles" @bind-Value="UserRole" Disabled="true"></TaskDropDown>
     <br />
-    <TaskTextInput Label="Password" Type="TaskTextInput.InputType.Password" @bind-Value="NewPassword"/>
-    <TaskTextInput Label="Repeat Password" Type="TaskTextInput.InputType.Password" @bind-Value="ConfirmPassword"/>
+    <TaskTextInput Label="Password" Type="TaskTextInput<string>.InputType.Password" @bind-Value="NewPassword"/>
+    <TaskTextInput Label="Repeat Password" Type="TaskTextInput<string>.InputType.Password" @bind-Value="ConfirmPassword"/>
     <!--This button should be replace by TaskButton once implemented-->
     <button @onclick="UpdatePassword">Change Password</button>
     <br />
 </TaskSection>
 
+@if (user.Role == "0")
+{
+    <TaskSection Title="SMTP Settings">
+        <TaskTextInput Disabled="false" Label="From Mailbox Name" @bind-Value="SmtpSettings.FromMailboxName" @oninput="DisableSave"/>
+        <TaskTextInput Disabled="false" Label="From Email" @bind-Value="SmtpSettings.FromEmail" @oninput="DisableSave" />
+        <br />
+        <TaskTextInput Disabled="false" Label="Smtp Server" @bind-Value="SmtpSettings.SmtpServer" @oninput="DisableSave" />
+        <TaskTextInput Disabled="false" Label="Smtp Username" @bind-Value="SmtpSettings.SmtpUsername" @oninput="DisableSave" />
+        <TaskTextInput Disabled="false" Label="Smtp Password" Type="TaskTextInput<string>.InputType.Password" @bind-Value="SmtpSettings.SmtpPassword" @oninput="DisableSave" />
+        <TaskTextInput Disabled="false" Label="Smtp Port" Type="TaskTextInput<short>.InputType.Short" @bind-Value="SmtpSettings.SmtpPort" @oninput="DisableSave" />
+        <br />
+        <TaskButton OnClick="ValidateSettings" Text="Test" Type="TaskButton.ButtonType.Default" />
+        @if (smtpSettingsVerified)
+        {
+            <span class="save-button">
+                <TaskButton OnClick="Save" Text="Save" Type="TaskButton.ButtonType.Positive" />
+            </span>
+        }
+       
+
+    </TaskSection>
+}
+
 @code {
     private TaskUser user = new TaskUser();
     private KeyValuePair<string, string> role;
+    private bool smtpSettingsVerified = false;
 
     public string FullName { get; set; } = string.Empty;
     public string NewPassword { get; set; } = string.Empty;
     public string ConfirmPassword { get; set; } = string.Empty;
     public string UserRole { get; set; } = string.Empty;
     public Dictionary<string, string> Roles { get; set; } = new Dictionary<string, string>();
+
+    internal SmtpSettings SmtpSettings { get; set; } = new SmtpSettings();
+    Notifications.EmailNotification EmailNotif = new Notifications.EmailNotification();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -64,6 +91,17 @@
 
                         role = new KeyValuePair<string, string>(v.Code, v.Value);
                         UserRole = v.Code;
+
+                        //SMTP Settings
+                        try
+                        {
+                            SmtpSettings = await EmailNotif.ReadSmtpSettings();
+                        }
+                        catch (Exception ex)
+                        {
+                            TaskError.HandleError(ex);
+                        }
+
                         StateHasChanged();
                     }
                 }
@@ -84,5 +122,41 @@
             }
             NewPassword = ConfirmPassword = string.Empty;
         }
+    }
+
+    private void ValidateSettings()
+    {
+        try
+        {
+            smtpSettingsVerified = EmailNotif.IsSent(user, SmtpSettings);
+        }
+        catch (Exception ex)
+        {
+            TaskError.HandleError(ex);
+        }
+    }
+
+    /// <summary>
+    /// Save tested and working smtp settings
+    /// </summary>
+    private void Save()
+    {
+        try
+        {
+            if (smtpSettingsVerified)
+            {
+                EmailNotif.WriteSmtpSettings(SmtpSettings);
+                smtpSettingsVerified = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            TaskError.HandleError(ex);
+        }
+    }
+
+    private void DisableSave()
+    {
+        smtpSettingsVerified = false;
     }
 }

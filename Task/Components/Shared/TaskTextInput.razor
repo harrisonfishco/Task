@@ -1,11 +1,12 @@
-﻿@inherits InputBase<string>
+﻿@typeparam T
+@inherits InputBase<T>
 
 <div>
     @if(Label != string.Empty)
     {
-        <label>@Label</label>
+        <label for="@instance">@Label</label>
     }
-    <input type="@GetInputType()" @bind="@CurrentValue" placeholder="@Placeholder" class="@Class" disabled="@Disabled"/>
+    <input id="@instance" type="@GetInputType()" @bind="@CurrentValue" placeholder="@Placeholder" class="@Class" disabled="@Disabled" @oninput="HandleInput"/>
 </div>
 
 @code {
@@ -18,14 +19,24 @@
     [Parameter]
     public InputType Type { get; set; } = InputType.Default;
 
-
     [Parameter]
     public string Placeholder { get; set; } = string.Empty;
 
     [Parameter]
     public string? Class { get; set; } = string.Empty;
 
+    [Parameter]
+    public EventCallback<ChangeEventArgs> OnInput { get; set; }
+
     private Guid instance = Guid.NewGuid();
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        if (OnInput.HasDelegate)
+        {
+            await OnInput.InvokeAsync(e);
+        }
+    }
 
     private string GetInputType()
     {
@@ -39,20 +50,88 @@
             case InputType.Password:
                 res = "password";
                 break;
+            case InputType.Integer:
+                res = "number";
+                break;
+            case InputType.Float:
+                res = "number";
+                break;
+            case InputType.Short:
+                res = "number";
+                break;
+            case InputType.Double:
+                res = "number";
+                break;
         }
         return res;
     }
 
-    protected override bool TryParseValueFromString(string? value, out string result, out string validationErrorMessage)
+    protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage)
     {
-        result = value ?? string.Empty;
-        validationErrorMessage = string.Empty;
-        return true;
+        bool res = false;
+        result = default;
+        validationErrorMessage = null;
+        try
+        {
+            if (result is string)
+            {
+                result = (T)(object)value;
+                res = true;
+            }
+            else if (result is int)
+            {
+                if (int.TryParse(value, out int intValue))
+                {
+                    result = (T)(object)intValue;
+                    res = true;
+                }
+            }
+            else if (result is double)
+            {
+                if (double.TryParse(value, out double doubleValue))
+                {
+                    result = (T)(object)doubleValue;
+                    res = true;
+                }
+            }
+            else if (result is short)
+            {
+                if (short.TryParse(value, out short shortValue))
+                {
+                    result = (T)(object)shortValue;
+                    res = true;
+                }
+            }
+            else if (result is float)
+            {
+                if (float.TryParse(value, out float floatValue))
+                {
+                    result = (T)(object)floatValue;
+                    res = true;
+                }
+            }
+            else 
+            {
+                throw new NotSupportedException($"Type {typeof(T).Name} is not supported");
+            }
+
+            result = default;
+        }
+        catch (Exception)
+        {
+            result = default;
+            validationErrorMessage = "The input is not valid.";
+        }
+        return res;
     }
 
     public enum InputType
     {
         Default,
-        Password
+        Password,
+        Integer,
+        Float,
+        Short,
+        Double,
     }
 }
