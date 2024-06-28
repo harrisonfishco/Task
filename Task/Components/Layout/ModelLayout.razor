@@ -190,6 +190,11 @@
 
     private async Task Find()
     {
+        if(TypeCheck.NotEmpty(searchObjects))
+        {
+            searchObjects.Clear();
+        }
+
         using(Context context = ContextFactory.CreateDbContext())
         {
             IEnumerable<string> navigationProperties = context.Model.FindEntityType(typeof(T))!
@@ -220,6 +225,11 @@
             }
 
             searchObjects = await query.AsNoTracking().ToListAsync();
+        }
+
+        if (TypeCheck.NotEmpty(findGrid))
+        {
+            findGrid.Refresh();
         }
     }
 
