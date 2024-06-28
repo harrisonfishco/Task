@@ -35,7 +35,7 @@ body, html {
     }
 
 /* Styling the search input */
-.inputbox[type="text"] {
+.inputbox {
     width: 80%; /* Adjust the width as needed */
     padding: 8px 10px; /* Top and bottom padding + left and right padding */
     margin: 10px auto; /* Centers the input in the sidebar */
@@ -49,12 +49,12 @@ body, html {
     outline: none; /* Removes the default focus outline */
 }
 
-    .inputbox[type="text"]:focus {
+    .inputbox:focus {
         border-color: #0056b3; /* Changes the border color on focus for visibility */
         box-shadow: 0 0 8px rgba(0,86,179,0.5); /* More prominent shadow on focus */
     }
 
-    .inputbox[type="text"]::placeholder {
+    .inputbox::placeholder {
         color: #aaa; /* Lighter text color for the placeholder */
         font-style: italic; /* Italicize placeholder text */
     }
