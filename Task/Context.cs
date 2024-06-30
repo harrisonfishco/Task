@@ -6,6 +6,7 @@ using System.Reflection;
 using Task.Login;
 using Task.Lookup;
 using Task.ModelObjects;
+using Task.Models;
 
 namespace Task
 {
@@ -50,6 +51,7 @@ namespace Task
             TaskLookup.OnModelCreating(modelBuilder);
             TaskTask.OnModelCreating(modelBuilder);
             TaskActivity.OnModelCreating(modelBuilder);
+            TaskUserPagePins.OnModelCreating(modelBuilder);
         }
 
         public async Task<bool> VerifyUser(string username, string password)
@@ -134,6 +136,8 @@ namespace Task
         public string Role { get; set; }
 
         public ICollection<TaskTask>? OpenedTasks { get; set; }
+
+        public ICollection<TaskUserPagePins>? UserPagePins { get; set; }
     }
 
     public class TaskUserSession : ModelObject
