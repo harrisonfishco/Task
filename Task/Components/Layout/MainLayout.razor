@@ -41,13 +41,14 @@
     // Checks if user is logged in
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Guid sessionId = await session.GetSessionId();
+
+        Guid sessionId = await session.GetSessionId(NavigationManager);
 
         using (Context ctx = ContextFactory.CreateDbContext())
         {
             TaskUserSession? sess = await ctx.TaskUserSessions.Where(s => s.UserSessionGu == sessionId).FirstOrDefaultAsync();
 
-            if(TypeCheck.Empty(sess))
+            if (TypeCheck.Empty(sess))
             {
                 NavigationManager.NavigateTo("/Login");
             }

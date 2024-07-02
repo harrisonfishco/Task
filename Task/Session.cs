@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace Task
 {
@@ -11,11 +12,19 @@ namespace Task
             this.ProtectedBrowserStorage = ProtectedBrowserStorage;
         }
 
-        public async Task<Guid> GetSessionId()
+        public async Task<Guid> GetSessionId(NavigationManager nav)
         {
-            ProtectedBrowserStorageResult<Guid> res = await ProtectedBrowserStorage.GetAsync<Guid>("session");
-
-            return res.Value;
+            ProtectedBrowserStorageResult<Guid> res;
+            try
+            {
+                res = await ProtectedBrowserStorage.GetAsync<Guid>("session");
+                return res.Value;
+            }
+            catch (Exception ex)
+            {
+                await ProtectedBrowserStorage.DeleteAsync("session");
+                return Guid.Empty;
+            }
         }
 
         public async System.Threading.Tasks.Task SetSessionId(Guid sessionId)
