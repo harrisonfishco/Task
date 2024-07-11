@@ -6,6 +6,7 @@
 @inject IDbContextFactory<Context> ContextFactory;
 @inject Session session;
 @inject NavigationManager NavigationManager;
+@inject Authentication authentication;
 
 <div class="login-container">
     <div class="login-box">
@@ -25,6 +26,8 @@
     //Checks if user is already logged in 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        authentication.IsAuthenticated(NavigationManager, session, ContextFactory);
+        /*
         Guid sessionId = await session.GetSessionId();
 
         using (Context ctx = ContextFactory.CreateDbContext())
@@ -36,6 +39,7 @@
                 NavigationManager.NavigateTo("/");
             }
         }
+        */
     }
 
     protected override void OnInitialized()
