@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
 
 namespace Task
 {
     public class Authentication
     {
-        private static readonly Dictionary<Guid, TaskUser> UserDictionary = new Dictionary<Guid, TaskUser>();
+        private static readonly ConcurrentDictionary<Guid, TaskUser> UserDictionary = new ConcurrentDictionary<Guid, TaskUser>();
 
-        public async Task<TaskUser> GetCurrentUserAsync(Session session)
+        public async Task<TaskUser?> GetCurrentUserAsync(Session session)
         {
             UserDictionary.TryGetValue(await session.GetSessionId(), out TaskUser? user);
             return user;
@@ -28,7 +29,7 @@ namespace Task
                 }
             }
         }
-        public async void Authenticate(NavigationManager navigationManager, Session session, IDbContextFactory<Context> ContextFactory, String username, String password, String status)
+        public async void Authenticate(NavigationManager navigationManager, Session session, IDbContextFactory<Context> ContextFactory, string username, string password, string status)
         {
             using (Context ctx = ContextFactory.CreateDbContext())
             {
