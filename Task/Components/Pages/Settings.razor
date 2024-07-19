@@ -64,7 +64,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Guid sessionId = await session.GetSessionId();
+        Guid sessionId = await session.GetSessionId(NavigationManager);
 
         if(firstRender)
         {
