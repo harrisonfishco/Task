@@ -1,11 +1,18 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore;
 
 namespace Task
 {
     public class Authentication
     {
+        private static readonly Dictionary<Task<Guid>, TaskUser> _user = new Dictionary<Task<Guid>, TaskUser>();
+
+        public async Task<TaskUser> GetCurrentUserAsync(Session session)
+        {
+            _user.TryGetValue(session.GetSessionId(), out TaskUser? user);
+            return user;
+        }
+
         public async void IsAuthenticated(NavigationManager navigationManager, Session session, IDbContextFactory<Context> ContextFactory)
         {
             Guid sessionId = await session.GetSessionId();
@@ -21,5 +28,38 @@ namespace Task
                 }
             }
         }
+        public async void Authenticate(NavigationManager navigationManager, Session session, IDbContextFactory<Context> ContextFactory, String username, String password, String status)
+        {
+            using (Context ctx = ContextFactory.CreateDbContext())
+            {
+                bool canLogin = await ctx.VerifyUser(username, password);
+
+                if (canLogin)
+                {
+                    TaskUser user = await ctx.TaskUsers.FirstAsync(u => u.Username == username);
+
+                    TaskCache.SetKey("TASKUSER_ROLE", user.Role);
+
+                    TaskUserSession tus = new TaskUserSession();
+                    tus.TaskUser = user;
+                    tus.UserGu = user.UserGu;
+                    tus.AddTimestamp = DateTime.Now;
+
+                    await ctx.TaskUserSessions.AddAsync(tus);
+                    await ctx.SaveChangesAsync();
+
+                    Guid sessionId = tus.UserSessionGu;
+
+                    await session.SetSessionId(sessionId);
+
+                    //set dictionary race condition?
+                    _user[session.GetSessionId()] = user;
+
+                    navigationManager.NavigateTo("/");
+                }
+                status = canLogin ? "Success" : "Error";
+            }
+        }
+
     }
 }

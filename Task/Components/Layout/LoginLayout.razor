@@ -27,19 +27,6 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         authentication.IsAuthenticated(NavigationManager, session, ContextFactory);
-        /*
-        Guid sessionId = await session.GetSessionId();
-
-        using (Context ctx = ContextFactory.CreateDbContext())
-        {
-            TaskUserSession? sess = await ctx.TaskUserSessions.Where(s => s.UserSessionGu == sessionId).FirstOrDefaultAsync();
-
-            if(TypeCheck.NotEmpty(sess))
-            {
-                NavigationManager.NavigateTo("/");
-            }
-        }
-        */
     }
 
     protected override void OnInitialized()
@@ -49,32 +36,7 @@
 
     private async void OnLogin()
     {
-        using(Context ctx = ContextFactory.CreateDbContext())
-        {
-            bool canLogin = await ctx.VerifyUser(Model.Username, Model.Password);
-
-            if(canLogin)
-            {
-                TaskUser user = await ctx.TaskUsers.FirstAsync(u => u.Username == Model.Username);
-
-                TaskCache.SetKey("TASKUSER_ROLE", user.Role);
-
-                TaskUserSession tus = new TaskUserSession();
-                tus.TaskUser = user;
-                tus.UserGu = user.UserGu;
-                tus.AddTimestamp = DateTime.Now;
-
-                await ctx.TaskUserSessions.AddAsync(tus);
-                await ctx.SaveChangesAsync();
-
-                Guid sessionId = tus.UserSessionGu;
-
-                await session.SetSessionId(sessionId);
-
-                NavigationManager.NavigateTo("/");
-            }
-            Model.Status = canLogin ? "Success" : "Error";
-        }
+        authentication.Authenticate(NavigationManager, session, ContextFactory, Model.Username, Model.Password, Model.Status);  
     }
 
     public class LoginParams
