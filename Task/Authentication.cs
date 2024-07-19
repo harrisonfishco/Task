@@ -5,11 +5,11 @@ namespace Task
 {
     public class Authentication
     {
-        private static readonly Dictionary<Task<Guid>, TaskUser> _user = new Dictionary<Task<Guid>, TaskUser>();
+        private static readonly Dictionary<Guid, TaskUser> UserDictionary = new Dictionary<Guid, TaskUser>();
 
         public async Task<TaskUser> GetCurrentUserAsync(Session session)
         {
-            _user.TryGetValue(session.GetSessionId(), out TaskUser? user);
+            UserDictionary.TryGetValue(await session.GetSessionId(), out TaskUser? user);
             return user;
         }
 
@@ -52,8 +52,7 @@ namespace Task
 
                     await session.SetSessionId(sessionId);
 
-                    //set dictionary race condition?
-                    _user[session.GetSessionId()] = user;
+                    UserDictionary[await session.GetSessionId()] = user;
 
                     navigationManager.NavigateTo("/");
                 }
