@@ -42,7 +42,10 @@
     // Checks if user is logged in
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Authentication.IsAuthenticated(NavigationManager, session, ContextFactory);
+        if (!(await Authentication.IsAuthenticated(NavigationManager, session, ContextFactory)))
+        {
+            NavigationManager.NavigateTo("/Login");
+        }
     }
 
     private async void OnLogout()

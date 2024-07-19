@@ -6,7 +6,7 @@
 @inject IDbContextFactory<Context> ContextFactory;
 @inject Session session;
 @inject NavigationManager NavigationManager;
-@inject Authentication authentication;
+@inject Authentication Authentication;
 
 <div class="login-container">
     <div class="login-box">
@@ -26,7 +26,10 @@
     //Checks if user is already logged in 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        authentication.IsAuthenticated(NavigationManager, session, ContextFactory);
+        if (await Authentication.IsAuthenticated(NavigationManager, session, ContextFactory))
+        {
+            NavigationManager.NavigateTo("/");
+        }
     }
 
     protected override void OnInitialized()
@@ -36,7 +39,7 @@
 
     private async void OnLogin()
     {
-        authentication.Authenticate(NavigationManager, session, ContextFactory, Model.Username, Model.Password, Model.Status);  
+        Authentication.Authenticate(NavigationManager, session, ContextFactory, Model.Username, Model.Password, Model.Status);  
     }
 
     public class LoginParams

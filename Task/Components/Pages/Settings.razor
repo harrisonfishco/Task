@@ -6,6 +6,7 @@
 @inject Session session;
 @inject IDbContextFactory<Context> ContextFactory;
 @inject NavigationManager NavigationManager;
+@inject Authentication Authentication;
 
 <PageTitle>Task - Settings</PageTitle>
 
@@ -73,7 +74,7 @@
 
                 if (sess != null && sess != default)
                 {
-                    TaskUser? u = await context.TaskUsers.Where(u => u.UserGu == sess.UserGu).FirstOrDefaultAsync();
+                    TaskUser? u = await Authentication.GetCurrentUser(session);
                     if (u == null || u == default)
                     {
                         NavigationManager.NavigateTo("/Login");
