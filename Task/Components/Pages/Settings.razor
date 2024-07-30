@@ -75,8 +75,6 @@
                 if (sess != null && sess != default)
                 {
                     TaskUser? u = await Authentication.GetCurrentUser(session, NavigationManager);
-                    //context.TaskUsers.Where(u => u.UserGu == sess.UserGu).FirstOrDefaultAsync();
-                    //Authentication.GetCurrentUser(session, NavigationManager);
                     if (u == null || u == default)
                     {
                         NavigationManager.NavigateTo("/Login");
