@@ -8,15 +8,15 @@ namespace Task
     {
         private static readonly ConcurrentDictionary<Guid, TaskUser> UserDictionary = new ConcurrentDictionary<Guid, TaskUser>();
 
-        public async Task<TaskUser?> GetCurrentUser(Session session)
+        public async Task<TaskUser?> GetCurrentUser(Session session, NavigationManager navigationManager)
         {
-            UserDictionary.TryGetValue(await session.GetSessionId(), out TaskUser? user);
+            UserDictionary.TryGetValue(await session.GetSessionId(navigationManager), out TaskUser? user);
             return user;
         }
 
         public async Task<bool> IsAuthenticated(NavigationManager navigationManager, Session session, IDbContextFactory<Context> ContextFactory)
         {
-            Guid sessionId = await session.GetSessionId();
+            Guid sessionId = await session.GetSessionId(navigationManager);
 
             using (Context ctx = ContextFactory.CreateDbContext())
             {
@@ -49,7 +49,7 @@ namespace Task
 
                     await session.SetSessionId(sessionId);
 
-                    UserDictionary[await session.GetSessionId()] = user;
+                    UserDictionary[await session.GetSessionId(navigationManager)] = user;
 
                     navigationManager.NavigateTo("/");
                 }
