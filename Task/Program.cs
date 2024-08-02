@@ -28,6 +28,7 @@ namespace Task
             builder.Services.AddDbContextFactory<Context>(options => options.UseSqlServer(connectionString));
             builder.Services.AddDbContext<Context>(options => options.UseSqlServer(connectionString));
             builder.Services.AddScoped<Session>();
+            builder.Services.AddScoped<Authentication>();
 
             var app = builder.Build();
 

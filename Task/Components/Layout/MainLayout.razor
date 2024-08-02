@@ -4,6 +4,7 @@
 @inject IDbContextFactory<Context> ContextFactory;
 @inject Session session;
 @inject NavigationManager NavigationManager;
+@inject Authentication Authentication;
 
 <div class="page">
     <div class="sidebar">
@@ -41,17 +42,9 @@
     // Checks if user is logged in
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-
-        Guid sessionId = await session.GetSessionId(NavigationManager);
-
-        using (Context ctx = ContextFactory.CreateDbContext())
+        if (!(await Authentication.IsAuthenticated(NavigationManager, session, ContextFactory)))
         {
-            TaskUserSession? sess = await ctx.TaskUserSessions.Where(s => s.UserSessionGu == sessionId).FirstOrDefaultAsync();
-
-            if (TypeCheck.Empty(sess))
-            {
-                NavigationManager.NavigateTo("/Login");
-            }
+            NavigationManager.NavigateTo("/Login");
         }
     }
 

@@ -6,6 +6,7 @@
 @inject IDbContextFactory<Context> ContextFactory;
 @inject Session session;
 @inject NavigationManager NavigationManager;
+@inject Authentication Authentication;
 
 <div class="login-container">
     <div class="login-box">
@@ -25,16 +26,9 @@
     //Checks if user is already logged in 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Guid sessionId = await session.GetSessionId(NavigationManager);
-
-        using (Context ctx = ContextFactory.CreateDbContext())
+        if (await Authentication.IsAuthenticated(NavigationManager, session, ContextFactory))
         {
-            TaskUserSession? sess = await ctx.TaskUserSessions.Where(s => s.UserSessionGu == sessionId).FirstOrDefaultAsync();
-
-            if(TypeCheck.NotEmpty(sess))
-            {
-                NavigationManager.NavigateTo("/");
-            }
+            NavigationManager.NavigateTo("/");
         }
     }
 
@@ -45,32 +39,7 @@
 
     private async void OnLogin()
     {
-        using(Context ctx = ContextFactory.CreateDbContext())
-        {
-            bool canLogin = await ctx.VerifyUser(Model.Username, Model.Password);
-
-            if(canLogin)
-            {
-                TaskUser user = await ctx.TaskUsers.FirstAsync(u => u.Username == Model.Username);
-
-                TaskCache.SetKey("TASKUSER_ROLE", user.Role);
-
-                TaskUserSession tus = new TaskUserSession();
-                tus.TaskUser = user;
-                tus.UserGu = user.UserGu;
-                tus.AddTimestamp = DateTime.Now;
-
-                await ctx.TaskUserSessions.AddAsync(tus);
-                await ctx.SaveChangesAsync();
-
-                Guid sessionId = tus.UserSessionGu;
-
-                await session.SetSessionId(sessionId);
-
-                NavigationManager.NavigateTo("/");
-            }
-            Model.Status = canLogin ? "Success" : "Error";
-        }
+        Authentication.Authenticate(NavigationManager, session, ContextFactory, Model.Username, Model.Password, Model.Status);  
     }
 
     public class LoginParams
