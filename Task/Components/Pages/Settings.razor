@@ -1,5 +1,6 @@
 ﻿@page "/Settings"
 @using Microsoft.EntityFrameworkCore;
+@using System.Net
 @using Task.Lookup;
 @using Task.Components.Shared;
 @using Task.Login;
@@ -43,24 +44,90 @@
                 <TaskButton OnClick="Save" Text="Save" Type="TaskButton.ButtonType.Positive" />
             </span>
         }
-       
+    </TaskSection>
 
+    <TaskSection Title="LDAP Settings">
+        <TaskCheckBox Disabled="false" Label="LDAP Authenticaction" OnChanged="UseLdapChange" LabelPosition="TaskCheckBox.Postion.Left"/>
+        <TaskCheckBox Disabled="false" Label="Use LDAPS" OnChanged="UseLdapsChange" LabelPosition="TaskCheckBox.Postion.Left" />
+        <br />
+        <TaskTextInput Disabled="false" Label="LDAP Server" @bind-Value="LdapSettings.LdapServer" />
+        <TaskTextInput Disabled="false" Label="LDAP Port" @bind-Value="LdapSettings.LdapPort" Type="TaskTextInput<short>.InputType.Short" />
+        <br />
+        <TaskTextInput Label="Search Base DN" @bind-Value="LdapSettings.SearchBase" Placeholder="DC=task,DC=com" />
+        <TaskTextInput Label="Search Filter" @bind-Value="LdapSettings.SearchFilter" Placeholder="(objectclass=user)" />
+        <TaskTextInput Label="Username Attribaute" @bind-Value="LdapSettings.UsernameAttribuate" />
+        <TaskTextInput Label="Mail Attribute" @bind-Value="LdapSettings.MailAttribuate" />
+        <br />
+        <TaskTextInput Label="Query User" @bind-Value="LdapSettings.QueryUser" Placeholder="CN=username,DC=task,DC=com" />
+        <TaskTextInput Label="Query User Password" @bind-Value="LdapSettings.QueryPassword" Type="TaskTextInput<string>.InputType.Password" />
+        <br />
+        <TaskButton OnClick="TestLdapBind" Text="Test Connection" Type="TaskButton.ButtonType.Default" />
+        <TaskButton OnClick="TestLdapQuery" Text="Test Connection" Type="TaskButton.ButtonType.Default" />
     </TaskSection>
 }
 
 @code {
+    #region User Settings
     private TaskUser user = new TaskUser();
     private KeyValuePair<string, string> role;
-    private bool smtpSettingsVerified = false;
 
     public string FullName { get; set; } = string.Empty;
     public string NewPassword { get; set; } = string.Empty;
     public string ConfirmPassword { get; set; } = string.Empty;
     public string UserRole { get; set; } = string.Empty;
     public Dictionary<string, string> Roles { get; set; } = new Dictionary<string, string>();
+    #endregion
 
+    #region SMTP Settings
     internal SmtpSettings SmtpSettings { get; set; } = new SmtpSettings();
     Notifications.EmailNotification EmailNotif = new Notifications.EmailNotification();
+    private bool smtpSettingsVerified = false;
+    #endregion
+
+    #region LDAP Settings
+    internal LdapSettings LdapSettings { get; set; } = new LdapSettings();
+
+    private void UseLdapChange(ChangeEventArgs e)
+    {
+        try
+        {
+            LdapSettings.UseLdap = (bool)e.Value!;
+        } catch(Exception ex) { TaskError.HandleError(ex); }
+    }
+
+    private void UseLdapsChange(ChangeEventArgs e)
+    {
+        try
+        {
+            LdapSettings.UseLdaps = (bool)e.Value!;
+
+            if (LdapSettings.UseLdaps && LdapSettings.LdapPort == LdapSettings.LDAP_DEFAULT_PORT)
+            {
+                LdapSettings.LdapPort = LdapSettings.LDAPS_DEFAULT_PORT;
+            }
+            else if (!LdapSettings.UseLdaps && LdapSettings.LdapPort == LdapSettings.LDAPS_DEFAULT_PORT)
+            {
+                LdapSettings.LdapPort = LdapSettings.LDAP_DEFAULT_PORT;
+            }
+        } catch(Exception ex) { TaskError.HandleError(ex); }
+    }
+
+    private void TestLdapBind()
+    {
+        try
+        {
+            NetworkCredential credentials = new NetworkCredential(LdapSettings.QueryUser, LdapSettings.QueryPassword, LdapSettings.Domain);
+        } catch(Exception ex) { TaskError.HandleError(ex); }
+    }
+
+    private void TestLdapQuery()
+    {
+        try
+        {
+            
+        } catch(Exception ex) { TaskError.HandleError(ex); }
+    }
+    #endregion
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
