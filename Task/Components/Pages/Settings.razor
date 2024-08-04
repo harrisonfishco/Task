@@ -1,6 +1,7 @@
 ﻿@page "/Settings"
 @using Microsoft.EntityFrameworkCore;
 @using System.Net
+@using System.DirectoryServices.Protocols;
 @using Task.Lookup;
 @using Task.Components.Shared;
 @using Task.Login;
@@ -11,7 +12,7 @@
 
 <PageTitle>Task - Settings</PageTitle>
 
-<h1>Settings - @user.Role</h1>
+<h1>Settings</h1>
 <TaskSection Title="User Settings">
     <TaskTextInput Disabled="true" Label="Username" @bind-Value="user.Username"/>
     <TaskTextInput Disabled="true" Label="Name" @bind-Value="FullName"/>
@@ -41,7 +42,7 @@
         @if (smtpSettingsVerified)
         {
             <span class="save-button">
-                <TaskButton OnClick="Save" Text="Save" Type="TaskButton.ButtonType.Positive" />
+                <TaskButton OnClick="SaveSmtp" Text="Save" Type="TaskButton.ButtonType.Positive" />
             </span>
         }
     </TaskSection>
@@ -55,14 +56,22 @@
         <br />
         <TaskTextInput Label="Search Base DN" @bind-Value="LdapSettings.SearchBase" Placeholder="DC=task,DC=com" />
         <TaskTextInput Label="Search Filter" @bind-Value="LdapSettings.SearchFilter" Placeholder="(objectclass=user)" />
+        <TaskCheckBox Disabled="false" Label="Search Subtree" OnChanged="(ChangeEventArgs e) => { LdapSettings.SearchSubtree = (bool)e.Value!; }" LabelPosition="TaskCheckBox.Postion.Left"/>
+        <br />
         <TaskTextInput Label="Username Attribaute" @bind-Value="LdapSettings.UsernameAttribuate" />
         <TaskTextInput Label="Mail Attribute" @bind-Value="LdapSettings.MailAttribuate" />
         <br />
         <TaskTextInput Label="Query User" @bind-Value="LdapSettings.QueryUser" Placeholder="CN=username,DC=task,DC=com" />
         <TaskTextInput Label="Query User Password" @bind-Value="LdapSettings.QueryPassword" Type="TaskTextInput<string>.InputType.Password" />
         <br />
-        <TaskButton OnClick="TestLdapBind" Text="Test Connection" Type="TaskButton.ButtonType.Default" />
-        <TaskButton OnClick="TestLdapQuery" Text="Test Connection" Type="TaskButton.ButtonType.Default" />
+        <TaskButton Disabled="ldapTesting" OnClick="TestLdapBind" Text="Test Bind" Type="TaskButton.ButtonType.Default" />
+        <TaskButton Disabled="ldapTesting" OnClick="TestLdapQuery" Text="Test Query" Type="TaskButton.ButtonType.Default" />
+        <TaskButton Disabled="ldapTesting" OnClick="() => Authentication.SaveLdapSettings(LdapSettings)" Text="Save" Type="TaskButton.ButtonType.Positive" />
+        <br />
+        @if(TypeCheck.NotEmpty(ldapStatus))
+        {
+            <span>@ldapStatus</span>
+        }
     </TaskSection>
 }
 
@@ -86,6 +95,8 @@
 
     #region LDAP Settings
     internal LdapSettings LdapSettings { get; set; } = new LdapSettings();
+    private string ldapStatus = string.Empty;
+    private bool ldapTesting = false;
 
     private void UseLdapChange(ChangeEventArgs e)
     {
@@ -116,16 +127,49 @@
     {
         try
         {
-            NetworkCredential credentials = new NetworkCredential(LdapSettings.QueryUser, LdapSettings.QueryPassword, LdapSettings.Domain);
-        } catch(Exception ex) { TaskError.HandleError(ex); }
+            ldapTesting = true;
+            NetworkCredential creds = new NetworkCredential(LdapSettings.QueryUser, LdapSettings.QueryPassword);
+
+            LdapConnection ldapConnection = new LdapConnection(LdapSettings.LdapServer);
+            ldapConnection.Credential = creds;
+            ldapConnection.AuthType = AuthType.Basic;
+            ldapConnection.Bind();
+            ldapStatus = "Bind Success";
+        }
+        catch (LdapException ex) { ldapStatus = $"{ex.ErrorCode}: {ex.Message}"; }
+        catch (Exception ex) { TaskError.HandleError(ex); }
+        finally { ldapTesting = false; }
     }
 
     private void TestLdapQuery()
     {
         try
         {
-            
-        } catch(Exception ex) { TaskError.HandleError(ex); }
+            ldapTesting = true;
+            NetworkCredential creds = new NetworkCredential(LdapSettings.QueryUser, LdapSettings.QueryPassword);
+
+            LdapConnection ldapConnection = new LdapConnection(LdapSettings.LdapServer);
+            ldapConnection.Credential = creds;
+            ldapConnection.AuthType = AuthType.Basic;
+            ldapConnection.Bind();
+
+            SearchScope searchScope = LdapSettings.SearchSubtree ? SearchScope.Subtree : SearchScope.Base;
+
+            SearchRequest searchRequest = new SearchRequest(LdapSettings.SearchBase, LdapSettings.SearchFilter, searchScope);
+
+            SearchResponse searchResponse = (SearchResponse)ldapConnection.SendRequest(searchRequest);
+
+            ldapStatus = $"Found {searchResponse.Entries.Count} results";
+        }
+        catch (DirectoryOperationException ex) { ldapStatus = ex.Message; }
+        catch (LdapException ex) { ldapStatus = $"{ex.ErrorCode}: {ex.Message}"; }
+        catch (Exception ex) { TaskError.HandleError(ex); }
+        finally { ldapTesting = false; }
+    }
+
+    private void SaveLdap()
+    {
+
     }
     #endregion
 
@@ -164,6 +208,7 @@
                         try
                         {
                             SmtpSettings = await EmailNotif.ReadSmtpSettings();
+                            LdapSettings = await Authentication.ReadLdapSettings();
                         }
                         catch (Exception ex)
                         {
@@ -207,7 +252,7 @@
     /// <summary>
     /// Save tested and working smtp settings
     /// </summary>
-    private void Save()
+    private void SaveSmtp()
     {
         try
         {

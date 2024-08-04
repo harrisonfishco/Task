@@ -1,11 +1,32 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text.Json;
+using Task.Components.Pages;
 
 namespace Task
 {
     public class Authentication
     {
+        public readonly string TASK_LDAP_SETTINGS_KEY = "TASK_LDAP_SETTINGS_KEY";
+
+        private string LdapSettingsFilePath
+        {
+            get
+            {
+                string res = string.Empty;
+                try
+                {
+                    res = Path.Combine(Directory.GetCurrentDirectory(), "ldapSettings.json");
+#if DEBUG
+                    res = Path.Combine(Directory.GetCurrentDirectory(), @"bin/Debug/net8.0", "ldapSettings.json");
+#endif
+                } catch(Exception ex) { TaskError.HandleError(ex); }
+                return res;
+            }
+        }
+
         private static readonly ConcurrentDictionary<Guid, TaskUser> UserDictionary = new ConcurrentDictionary<Guid, TaskUser>();
 
         public async Task<TaskUser?> GetCurrentUser(Session session, NavigationManager navigationManager)
@@ -57,5 +78,65 @@ namespace Task
             }
         }
 
+        public async void SaveLdapSettings(LdapSettings settings)
+        {
+            try
+            {
+                string json = JsonSerializer.Serialize(settings);
+
+                TaskCache.SetKey(TASK_LDAP_SETTINGS_KEY, json);
+
+                await File.WriteAllTextAsync(LdapSettingsFilePath, json);
+
+            } catch(Exception ex) { TaskError.HandleError(ex); }
+        }
+
+        public async Task<LdapSettings> ReadLdapSettings()
+        {
+            string json;
+            LdapSettings? res = null;
+
+            try
+            {
+                if(TaskCache.ContainsKey(TASK_LDAP_SETTINGS_KEY))
+                {
+                    json = TaskCache.GetKey(TASK_LDAP_SETTINGS_KEY)!;
+                }
+                else
+                {
+                    if(!File.Exists(LdapSettingsFilePath))
+                    {
+                        await CreateDefaultLdapSettings();
+                    }
+
+                    json = await File.ReadAllTextAsync(LdapSettingsFilePath);
+
+                    TaskCache.SetKey(TASK_LDAP_SETTINGS_KEY, json);
+
+                    res = JsonSerializer.Deserialize<LdapSettings>(json);
+                    if(TypeCheck.Empty(res))
+                    {
+                        TaskError.CreateUserError("Ldap Settings Missing");
+                    }
+                }
+            } catch(Exception ex) { TaskError.HandleError(ex); }
+
+            return res!;
+        }
+
+        private async System.Threading.Tasks.Task CreateDefaultLdapSettings(LdapSettings? settings = null)
+        {
+            try
+            {
+                if(TypeCheck.Empty(settings))
+                {
+                    settings = new LdapSettings();
+                }
+
+                string json = JsonSerializer.Serialize(settings);
+
+                await File.WriteAllTextAsync(LdapSettingsFilePath, json);
+            } catch(Exception ex) { TaskError.HandleError(ex); }
+        }
     }
 }

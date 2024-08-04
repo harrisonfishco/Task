@@ -26,6 +26,7 @@ namespace Task.Components.Pages
 
         public bool UseLdap { get; set; } = false;
         public bool UseLdaps { get; set; } = false;
+        public bool SearchSubtree { get; set; } = false;
         public string LdapServer { get; set; } = string.Empty;
         public short LdapPort { get; set; } = LDAP_DEFAULT_PORT;
         public string SearchBase { get; set; } = string.Empty;
